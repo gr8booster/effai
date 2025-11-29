@@ -87,16 +87,34 @@ const Onboarding = () => {
     await simulateAgentWork();
     
     try {
-      // Create EEFai instance with full profile
-      await axios.post(`${API_URL}/api/eefai/create?user_id=${formData.email}`);
+      const userEmail = formData.email;
       
-      // Generate initial financial plan via CFP-AI
+      // Create EEFai instance with COMPLETE profile data
+      const createPayload = {
+        user_id: userEmail,
+        profile: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          state: formData.state,
+          income: parseFloat(formData.income) || 0,
+          expenses: parseFloat(formData.expenses) || 0,
+          savings: parseFloat(formData.savings) || 0,
+          debts: [],
+          goals: [{type: 'emergency', amount: 1000, deadline_days: 90}]
+        }
+      };
+      
+      // Create instance via backend endpoint that accepts full profile
+      await axios.post(`${API_URL}/api/eefai/create`, createPayload);
+      
+      // Generate initial financial plan
       const planResponse = await axios.post(`${API_URL}/api/cfp/simulate`, {
-        user_id: formData.email,
+        user_id: userEmail,
         scenario: {
           balances: [],
-          income: parseFloat(formData.income),
-          expenses: parseFloat(formData.expenses),
+          income: parseFloat(formData.income) || 0,
+          expenses: parseFloat(formData.expenses) || 0,
           goal: {
             type: 'emergency',
             amount: 1000,
@@ -106,30 +124,23 @@ const Onboarding = () => {
         trace_id: `onboard_${Date.now()}`
       });
       
-      // Generate initial tasks via MentorAgent
+      // Generate initial tasks
       await axios.post(`${API_URL}/api/mentor/generate-tasks`, {
-        user_id: formData.email,
+        user_id: userEmail,
         plan_id: 'initial_plan',
         milestone_id: 'emergency_fund_start',
         trace_id: `onboard_tasks_${Date.now()}`
       });
       
-      // Send profile message to EEFai
-      await axios.post(`${API_URL}/api/eefai/${formData.email}/message`, {
-        user_id: formData.email,
-        message: `Profile: ${formData.name}, ${formData.state}. Income: $${formData.income}, Expenses: $${formData.expenses}, Savings: $${formData.savings}`,
-        trace_id: `profile_${Date.now()}`,
-        attachments: []
-      });
-      
-      // Store form data in localStorage for dashboard access
+      // Store in localStorage for immediate dashboard access
       localStorage.setItem('eefai_user', JSON.stringify({
-        email: formData.email,
+        email: userEmail,
         name: formData.name,
         state: formData.state,
-        income: formData.income,
-        expenses: formData.expenses,
-        savings: formData.savings,
+        income: parseFloat(formData.income) || 0,
+        expenses: parseFloat(formData.expenses) || 0,
+        savings: parseFloat(formData.savings) || 0,
+        monthlyS urplus: planResponse.data.calculations.monthly_surplus,
         onboarded: true,
         onboarded_at: new Date().toISOString()
       }));
@@ -137,7 +148,7 @@ const Onboarding = () => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Onboarding error:', error);
-      alert('Error during setup. Please try again.');
+      alert(`Setup error: ${error.response?.data?.detail || error.message}. Please try again.`);
       setLoading(false);
       setAnalyzing(false);
       setAgentProgress([]);
