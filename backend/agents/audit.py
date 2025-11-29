@@ -116,7 +116,7 @@ async def verify_provenance(input_data: AuditVerifyInput):
         # Compare hashes
         verified = stored_hash == input_data.output_hash
         
-        message = "Output verified - hash matches" if verified else f"VERIFICATION FAILED - Hash mismatch"
+        message = "Output verified - hash matches" if verified else "VERIFICATION FAILED - Hash mismatch"
         
         result = AuditVerifyOutput(
             ok=True,
