@@ -113,7 +113,7 @@ const Dashboard = () => {
   }
 
   const profile = userData?.profile || user;
-  const monthlyS urplus = financialPlan?.calculations?.monthly_surplus || (profile.income - profile.expenses);
+  const monthlySurplus = financialPlan?.calculations?.monthly_surplus || (profile.income - profile.expenses);
   const currentSavings = profile.savings || 0;
   const emergencyGoal = 1000;
   const savingsProgress = (currentSavings / emergencyGoal) * 100;
