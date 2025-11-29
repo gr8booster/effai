@@ -498,7 +498,7 @@ class EEFaiBackendTester:
         
         # Intake Agent tests
         self.log("\n--- INTAKE AGENT TESTS ---")
-        self.test_intake_extract()
+        self.test_intake_upload()
         
         # Print summary
         self.print_summary()
