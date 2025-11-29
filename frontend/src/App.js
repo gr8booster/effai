@@ -28,6 +28,8 @@ function App() {
             <Route path="/learning" element={<MicroLearning />} />
             <Route path="/admin" element={<AdminConsole />} />
             <Route path="/credit" element={<CreditImprovement />} />
+            <Route path="/savings-planner" element={<SavingsPlanner />} />
+            <Route path="/dispute-manager" element={<DisputeManager />} />
           </Routes>
         </div>
       </Router>
