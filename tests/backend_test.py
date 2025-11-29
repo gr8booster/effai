@@ -105,7 +105,7 @@ class EEFaiBackendTester:
             "POST",
             "api/auth/register",
             200,
-            data={
+            params={
                 "email": self.test_user_email,
                 "password": "TestPass123!",
                 "name": "Test User"
@@ -123,7 +123,7 @@ class EEFaiBackendTester:
             "POST",
             "api/auth/login",
             200,
-            data={
+            params={
                 "email": self.test_user_email,
                 "password": "TestPass123!"
             }
