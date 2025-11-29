@@ -7,6 +7,7 @@ import LetterBuilder from './pages/LetterBuilder';
 import MicroLearning from './pages/MicroLearning';
 import AdminConsole from './pages/AdminConsole';
 import CreditImprovement from './pages/CreditImprovement';
+import Login from './pages/Login';
 import './App.css';
 
 function App() {
