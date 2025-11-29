@@ -59,13 +59,13 @@ const Onboarding = () => {
     switch(step) {
       case 1:
         return (
-          <div className="space-y-6" data-testid="onboarding-step-1">
-            <h2 className="text-3xl font-semibold text-neutral-900 font-heading">Welcome to EEFai</h2>
-            <p className="text-neutral-600">Let's get started by learning a bit about you.</p>
+          <div className="space-y-4" data-testid="onboarding-step-1">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 font-heading">Welcome to EEFai</h2>
+            <p className="text-neutral-600 text-sm sm:text-base">Let's get started by learning a bit about you.</p>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -73,7 +73,7 @@ const Onboarding = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder="John Doe"
                   data-testid="input-name"
                   required
@@ -81,7 +81,7 @@ const Onboarding = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Email *
                 </label>
                 <input
@@ -89,7 +89,7 @@ const Onboarding = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder="john@example.com"
                   data-testid="input-email"
                   required
@@ -97,7 +97,7 @@ const Onboarding = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Phone Number *
                 </label>
                 <input
@@ -105,7 +105,7 @@ const Onboarding = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder="(555) 123-4567"
                   data-testid="input-phone"
                   required
@@ -113,14 +113,14 @@ const Onboarding = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   State *
                 </label>
                 <select
                   name="state"
                   value={formData.state}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   data-testid="select-state"
                   required
                 >
