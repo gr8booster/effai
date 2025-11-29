@@ -60,7 +60,10 @@ const CreditImprovement = () => {
         </div>
 
         <div className="flex gap-4">
-          <button onClick={() => window.location.href = '/letters'} className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium">
+          <button onClick={() => window.location.href = '/savings-planner'} className="flex-1 px-6 py-3 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 font-medium">
+            View Full Savings Plan
+          </button>
+          <button onClick={() => window.location.href = '/dispute-manager'} className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium">
             Generate Credit Dispute Letter
           </button>
           <button onClick={loadCreditData} className="px-6 py-3 border-2 border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 font-medium">
