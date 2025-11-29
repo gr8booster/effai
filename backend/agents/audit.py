@@ -46,7 +46,7 @@ async def log_provenance(input_data: AuditLogInput):
                     input_hash, output_hash, s3_input_path, s3_output_path,
                     db_refs, legal_db_version, cfp_version,
                     timestamp, human_reviewed, hmac_signature
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12, $13)
             """,
                 input_data.provenance_id,
                 input_data.agent_id,
@@ -55,7 +55,7 @@ async def log_provenance(input_data: AuditLogInput):
                 input_data.output_hash,
                 input_data.s3_input_path,
                 input_data.s3_output_path,
-                input_data.db_refs,
+                json.dumps(input_data.db_refs) if input_data.db_refs else None,
                 input_data.legal_db_version,
                 input_data.cfp_version,
                 input_data.timestamp,
