@@ -386,24 +386,22 @@ class EEFaiBackendTester:
             "POST",
             "api/credit/analyze",
             200,
+            params={"user_id": self.test_user_email},
             data={
-                "user_id": self.test_user_email,
-                "report_data": {
-                    "current_score": 650,
-                    "accounts": [
-                        {
-                            "status": "collections",
-                            "creditor": "ABC Bank",
-                            "balance": 1500,
-                            "date": "2023-01-01"
-                        },
-                        {
-                            "type": "revolving",
-                            "balance": 500,
-                            "limit": 2000
-                        }
-                    ]
-                }
+                "current_score": 650,
+                "accounts": [
+                    {
+                        "status": "collections",
+                        "creditor": "ABC Bank",
+                        "balance": 1500,
+                        "date": "2023-01-01"
+                    },
+                    {
+                        "type": "revolving",
+                        "balance": 500,
+                        "limit": 2000
+                    }
+                ]
             }
         )
         if success:
