@@ -1,8 +1,9 @@
-"""LegalAI - Deterministic legal rules engine"""
+"""LegalAI - AI-powered legal rules engine with FDCPA/FCRA/CROA"""
 from fastapi import APIRouter, HTTPException
 import logging
 from typing import List
 from datetime import datetime, timedelta
+import json
 
 from schemas import (
     LegalCheckInput,
