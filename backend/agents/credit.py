@@ -13,8 +13,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/credit", tags=["credit"])
 
 
+from fastapi import APIRouter, HTTPException, Body
+
 @router.post("/analyze")
-async def analyze_credit_report(user_id: str, report_data: dict):
+async def analyze_credit_report(user_id: str, report_data: dict = Body(...)):
     """
     Analyze credit report  
     
