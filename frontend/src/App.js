@@ -15,7 +15,8 @@ function App() {
     <Router>
       <div className="min-h-screen bg-neutral-50">
         <Routes>
-          <Route path="/" element={<Navigate to="/onboarding" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/upload" element={<DocumentUpload />} />
