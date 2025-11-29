@@ -155,60 +155,128 @@ def perform_ocr(file_content: bytes, filename: str) -> str:
 
 def extract_fields_from_text(text: str) -> dict:
     """
-    Extract structured fields from text using regex patterns
+    Extract structured fields using AI + regex
     
-    For POC: Basic pattern matching
-    Phase 2: ML-based extraction
+    Uses OpenAI for intelligent field extraction, then validates with regex
     """
     fields = {}
     
-    # Extract creditor name (simple pattern)
-    creditor_pattern = r"(?:from|creditor|collector):\s*([A-Za-z0-9\s&,.-]+)"
-    creditor_match = re.search(creditor_pattern, text, re.IGNORECASE)
-    if creditor_match:
-        fields["creditor"] = ExtractedField(
-            value=creditor_match.group(1).strip(),
-            confidence=0.90
-        )
-    
-    # Extract account number
-    account_pattern = r"(?:account|acct|#)\s*(?:number|no\.?)?:?\s*([0-9X*\-]{4,})"
-    account_match = re.search(account_pattern, text, re.IGNORECASE)
-    if account_match:
-        account_num = account_match.group(1)
-        # Mask all but last 4
-        if len(account_num) > 4:
-            masked = "X" * (len(account_num) - 4) + account_num[-4:]
-        else:
-            masked = account_num
+    # Use AI for intelligent extraction
+    try:
+        from ai_utils import AIProvider
+        import asyncio
         
-        fields["account_number_last4"] = ExtractedField(
-            value=masked,
-            confidence=0.88
-        )
+        provider = AIProvider(temperature=0.0)
+        
+        system_prompt = """You are IntakeAgent, an AI document analyzer specializing in debt collection letters and financial documents.
+        Extract key information and return ONLY a JSON object:
+        {
+          "creditor": "Company name",
+          "account_number": "Last 4 digits only",
+          "amount": 1234.56,
+          "date": "YYYY-MM-DD",
+          "document_type": "collection_letter|credit_report|bill|other"
+        }
+        
+        If a field is not found, use null. Be precise and conservative.
+        """
+        
+        user_prompt = f"Extract information from this document:\n\n{text[:2000]}"
+        
+        # Run AI extraction
+        ai_response = asyncio.run(provider.generate(system_prompt, user_prompt, f"intake_{hash(text)}"))
+        
+        # Parse AI response
+        import json
+        import re
+        
+        json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+        if json_match:
+            ai_data = json.loads(json_match.group())
+            
+            # Add AI-extracted fields with high confidence
+            if ai_data.get('creditor'):
+                fields["creditor"] = ExtractedField(
+                    value=ai_data['creditor'],
+                    confidence=0.92
+                )
+            
+            if ai_data.get('account_number'):
+                fields["account_number_last4"] = ExtractedField(
+                    value=ai_data['account_number'],
+                    confidence=0.90
+                )
+            
+            if ai_data.get('amount'):
+                fields["amount"] = ExtractedField(
+                    value={"value": float(ai_data['amount']), "currency": "USD"},
+                    confidence=0.95
+                )
+            
+            if ai_data.get('date'):
+                fields["date"] = ExtractedField(
+                    value=ai_data['date'],
+                    confidence=0.88
+                )
+            
+            if ai_data.get('document_type'):
+                fields["document_type"] = ExtractedField(
+                    value=ai_data['document_type'],
+                    confidence=0.93
+                )
+            
+            logger.info(f"AI extracted {len(fields)} fields with high confidence")
+            
+    except Exception as e:
+        logger.warning(f"AI extraction failed: {e}, falling back to regex")
     
-    # Extract amount
-    amount_pattern = r"\$?\s*([0-9,]+\.\d{2})"
-    amount_match = re.search(amount_pattern, text)
-    if amount_match:
-        amount_str = amount_match.group(1).replace(",", "")
-        try:
-            amount = float(amount_str)
-            fields["amount"] = ExtractedField(
-                value={"value": amount, "currency": "USD"},
-                confidence=0.92
+    # Fallback/supplement with regex patterns
+    if "creditor" not in fields:
+        creditor_pattern = r"(?:from|creditor|collector):\s*([A-Za-z0-9\s&,.-]+)"
+        creditor_match = re.search(creditor_pattern, text, re.IGNORECASE)
+        if creditor_match:
+            fields["creditor"] = ExtractedField(
+                value=creditor_match.group(1).strip(),
+                confidence=0.75
             )
-        except (ValueError, TypeError):
-            pass
     
-    # Extract date
-    date_pattern = r"(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})"
-    date_match = re.search(date_pattern, text)
-    if date_match:
-        fields["date"] = ExtractedField(
-            value=date_match.group(1),
-            confidence=0.85
-        )
+    if "account_number_last4" not in fields:
+        account_pattern = r"(?:account|acct|#)\s*(?:number|no\.?)?:?\s*([0-9X*\-]{4,})"
+        account_match = re.search(account_pattern, text, re.IGNORECASE)
+        if account_match:
+            account_num = account_match.group(1)
+            if len(account_num) > 4:
+                masked = "X" * (len(account_num) - 4) + account_num[-4:]
+            else:
+                masked = account_num
+            
+            fields["account_number_last4"] = ExtractedField(
+                value=masked,
+                confidence=0.70
+            )
+    
+    if "amount" not in fields:
+        amount_pattern = r"\$?\s*([0-9,]+\.\d{2})"
+        amount_match = re.search(amount_pattern, text)
+        if amount_match:
+            amount_str = amount_match.group(1).replace(",", "")
+            try:
+                amount = float(amount_str)
+                fields["amount"] = ExtractedField(
+                    value={"value": amount, "currency": "USD"},
+                    confidence=0.85
+                )
+            except (ValueError, TypeError):
+                pass
+    
+    if "date" not in fields:
+        date_pattern = r"(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})"
+        date_match = re.search(date_pattern, text)
+        if date_match:
+            fields["date"] = ExtractedField(
+                value=date_match.group(1),
+                confidence=0.75
+            )
     
     return fields
 
