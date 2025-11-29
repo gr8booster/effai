@@ -187,8 +187,15 @@ async def generate_document(input_data: WriterGenerateInput):
     """
     try:
         # Get template
-        if input_data.template_id == "debt_validation_v1":
-            template_html = DEBT_VALIDATION_TEMPLATE
+        template_map = {
+            "debt_validation_v1": DEBT_VALIDATION_TEMPLATE,
+            "cease_desist_v1": CEASE_DESIST_TEMPLATE,
+            "credit_dispute_v1": CREDIT_DISPUTE_TEMPLATE,
+            "settlement_offer_v1": SETTLEMENT_OFFER_TEMPLATE
+        }
+        
+        if input_data.template_id in template_map:
+            template_html = template_map[input_data.template_id]
         else:
             # Try to load from MongoDB
             db = get_mongo_db()
