@@ -188,9 +188,6 @@ def extract_fields_from_text(text: str) -> dict:
         ai_response = asyncio.run(provider.generate(system_prompt, user_prompt, f"intake_{hash(text)}"))
         
         # Parse AI response
-        import json
-        import re
-        
         json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
         if json_match:
             ai_data = json.loads(json_match.group())
