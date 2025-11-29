@@ -1,8 +1,9 @@
-"""SupportAgent - Human review queue and escalation management"""
+"""SupportAgent - AI-powered triage and human review queue"""
 from fastapi import APIRouter, HTTPException
 import logging
 from typing import List
 from datetime import datetime, timezone
+import json
 
 from schemas import (
     SupportReviewInput,
