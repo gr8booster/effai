@@ -2,10 +2,9 @@
 from fastapi import APIRouter, HTTPException
 import logging
 import hashlib
-import hmac
 import os
 import json
-from datetime import timezone
+from datetime import datetime, timezone
 
 from schemas import (
     AuditLogInput,
@@ -14,6 +13,7 @@ from schemas import (
     AuditVerifyOutput
 )
 from database import get_pg_pool, get_mongo_db
+from canonical_json import hmac_sign, canonical_json
 
 logger = logging.getLogger(__name__)
 
