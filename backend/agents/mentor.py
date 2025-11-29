@@ -26,10 +26,94 @@ for i in range(3, 71):
 
 @router.post("/generate-tasks", response_model=MentorGenerateTasksOutput)
 async def generate_tasks(input_data: MentorGenerateTasksInput):
-    tasks = [MentorTask(task_id=str(uuid.uuid4()), description=f"Task {i}", time_est_min=5, resources=[], provenance_ref=f"mentor_{input_data.trace_id}") for i in range(1, 4)]
-    db = get_mongo_db()
-    await db.mentor_tasks.insert_many([{"task_id": t.task_id, "user_id": input_data.user_id, "plan_id": input_data.plan_id, "milestone_id": input_data.milestone_id, "description": t.description, "time_est_min": t.time_est_min, "resources": t.resources, "status": "pending", "created_at": datetime.now(timezone.utc).isoformat()} for t in tasks])
-    return MentorGenerateTasksOutput(tasks=tasks, lesson_of_day=MentorLesson(id="lesson_1", html=LESSON_TEMPLATES["lesson_1"]["html"]))
+    """Generate personalized daily tasks using AI"""
+    try:
+        from ai_utils import AIProvider
+        
+        db = get_mongo_db()
+        
+        # Get user profile for context
+        user_state = await db.eefai_state.find_one({"user_id": input_data.user_id})
+        profile = user_state.get("profile", {}) if user_state else {}
+        
+        # Use AI to generate personalized tasks
+        provider = AIProvider(temperature=0.7)
+        
+        system_prompt = f"""You are MentorAgent, an AI financial coach.
+        Generate 3 specific, actionable daily tasks for this user based on their milestone: {input_data.milestone_id}.
+        
+        User profile:
+        - Income: ${profile.get('income', 0)}
+        - Expenses: ${profile.get('expenses', 0)}
+        - Savings: ${profile.get('savings', 0)}
+        - State: {profile.get('state', 'Unknown')}
+        
+        Return ONLY a JSON array of tasks in this exact format:
+        [
+          {{"description": "Specific task here", "time_est_min": 5}},
+          {{"description": "Another task", "time_est_min": 10}},
+          {{"description": "Third task", "time_est_min": 3}}
+        ]
+        """
+        
+        user_prompt = f"Generate 3 personalized tasks for milestone: {input_data.milestone_id}"
+        
+        ai_response = await provider.generate(system_prompt, user_prompt, f"mentor_{input_data.user_id}_{datetime.now().timestamp()}")
+        
+        # Parse AI response
+        import json
+        import re
+        
+        # Extract JSON from response
+        json_match = re.search(r'\[.*\]', ai_response, re.DOTALL)
+        if json_match:
+            tasks_data = json.loads(json_match.group())
+        else:
+            # Fallback if AI doesn't return proper JSON
+            tasks_data = [
+                {"description": "Review your monthly budget and identify one expense to reduce", "time_est_min": 10},
+                {"description": "Set up automatic transfer of $50 to savings account", "time_est_min": 5},
+                {"description": "Check credit report for any errors or inaccuracies", "time_est_min": 15}
+            ]
+        
+        # Convert to MentorTask objects
+        tasks = []
+        for task_data in tasks_data[:3]:  # Limit to 3
+            task = MentorTask(
+                task_id=str(uuid.uuid4()),
+                description=task_data.get('description', 'Complete financial review'),
+                time_est_min=task_data.get('time_est_min', 5),
+                resources=[],
+                provenance_ref=f"mentor_ai_{input_data.trace_id}"
+            )
+            tasks.append(task)
+        
+        # Store in MongoDB
+        task_docs = [{
+            "task_id": task.task_id,
+            "user_id": input_data.user_id,
+            "plan_id": input_data.plan_id,
+            "milestone_id": input_data.milestone_id,
+            "description": task.description,
+            "time_est_min": task.time_est_min,
+            "resources": task.resources,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "generated_by": "ai"
+        } for task in tasks]
+        
+        await db.mentor_tasks.insert_many(task_docs)
+        
+        logger.info(f"AI generated {len(tasks)} personalized tasks for {input_data.user_id}")
+        
+        return MentorGenerateTasksOutput(
+            tasks=tasks,
+            lesson_of_day=MentorLesson(id="lesson_1", html=LESSON_TEMPLATES["lesson_1"]["html"])
+        )
+        
+    except Exception as e:
+        logger.error(f"Task generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/lesson/{lesson_id}")
 async def get_lesson(lesson_id: str):
