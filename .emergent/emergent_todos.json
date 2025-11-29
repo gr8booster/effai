@@ -9,27 +9,27 @@
   },
   {
     "content": "Phase 1 POC: Define canonical JSON schemas for all 9 agents (orchestrator, legal, cfp, writer, audit, etc.)",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Phase 1 POC: Implement FastAPI routers for all 9 agents with deterministic stubs",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 1 POC: Build LegalAI deterministic rules engine (FDCPA/FCRA/CROA/SoL table)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 1 POC: Build CFP-AI deterministic math engine (amortization, payoff, checksum)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 1 POC: Implement AuditAgent provenance tracking with immutable logs",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 1 POC: Create test_core.py script covering orchestration pipeline end-to-end",
-    "status": "pending"
+    "status": "in_progress"
   },
   {
     "content": "Phase 1 POC: Run tests and fix until all pass (deterministic hashes, validation gates)",
