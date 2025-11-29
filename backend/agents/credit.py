@@ -145,60 +145,92 @@ async def generate_credit_dispute(user_id: str, dispute_data: dict):
 @router.get("/score/estimate")
 async def estimate_credit_score(user_id: str):
     """
-    Estimate credit score based on profile data
-    
-    Factors:
-    - Payment history (35%)
-    - Credit utilization (30%)
-    - Credit age (15%)
-    - Credit mix (10%)
-    - New credit (10%)
+    Estimate credit score using AI analysis of user profile
     """
     try:
-        db = get_mongo_db()
+        from ai_utils import AIProvider
         
+        db = get_mongo_db()
         user_state = await db.eefai_state.find_one({"user_id": user_id})
         if not user_state:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Simple scoring algorithm
-        base_score = 300
+        profile = user_state.get("profile", {})
         
-        # Payment history (assume good if no late payments in profile)
-        debts = user_state.get("profile", {}).get("debts", [])
-        if len(debts) == 0:
-            base_score += 250  # No derogatory accounts
-        elif len(debts) < 3:
-            base_score += 200
+        # Use AI to analyze credit profile
+        provider = AIProvider(temperature=0.3)
+        
+        system_prompt = """You are CreditAI, an expert credit analyst.
+        Analyze this user's financial profile and estimate their credit score.
+        Consider: payment history, debt levels, savings habits.
+        
+        Respond in JSON format:
+        {
+          "estimated_score": 720,
+          "score_range": "Good",
+          "reasoning": "Brief explanation",
+          "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"]
+        }
+        """
+        
+        user_prompt = f"""
+        User Profile:
+        - Monthly Income: ${profile.get('income', 0)}
+        - Monthly Expenses: ${profile.get('expenses', 0)}
+        - Current Savings: ${profile.get('savings', 0)}
+        - Active Debts: {len(profile.get('debts', []))}
+        - Total Debt: ${sum(d.get('balance', 0) for d in profile.get('debts', []))}
+        
+        Estimate their credit score and provide recommendations.
+        """
+        
+        ai_response = await provider.generate(system_prompt, user_prompt, f"credit_{user_id}_{datetime.now().timestamp()}")
+        
+        # Parse AI response
+        import json
+        import re
+        
+        json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+        if json_match:
+            ai_data = json.loads(json_match.group())
+            estimated_score = ai_data.get('estimated_score', 680)
+            recommendations = ai_data.get('recommendations', [])
+            score_range = ai_data.get('score_range', get_score_range(estimated_score))
         else:
-            base_score += 150
-        
-        # Utilization (lower is better)
-        # Simplified: if savings > 0, assume low utilization
-        savings = user_state.get("profile", {}).get("savings", 0)
-        if savings > 2000:
+            # Fallback calculation
+            base_score = 300
+            if len(profile.get('debts', [])) == 0:
+                base_score += 250
+            elif len(profile.get('debts', [])) < 3:
+                base_score += 200
+            else:
+                base_score += 150
+            
+            savings = profile.get('savings', 0)
+            if savings > 2000:
+                base_score += 100
+            elif savings > 500:
+                base_score += 75
+            else:
+                base_score += 50
+            
             base_score += 100
-        elif savings > 500:
-            base_score += 75
-        else:
-            base_score += 50
-        
-        # Credit mix and age (assume average)
-        base_score += 100
-        
-        estimated_score = min(base_score, 850)  # Cap at 850
+            estimated_score = min(base_score, 850)
+            recommendations = generate_score_recommendations(estimated_score, user_state)
+            score_range = get_score_range(estimated_score)
         
         return {
             "estimated_score": estimated_score,
-            "score_range": get_score_range(estimated_score),
+            "score_range": score_range,
             "factors": {
-                "payment_history": "Good" if len(debts) < 2 else "Fair",
-                "utilization": "Good" if savings > 1000 else "Needs improvement",
+                "payment_history": "Good" if len(profile.get('debts', [])) < 2 else "Fair",
+                "utilization": "Good" if profile.get('savings', 0) > 1000 else "Needs improvement",
                 "credit_age": "Average",
                 "credit_mix": "Average",
                 "new_credit": "Average"
             },
-            "recommendations": generate_score_recommendations(estimated_score, user_state)
+            "recommendations": recommendations,
+            "ai_powered": True
         }
         
     except HTTPException:
