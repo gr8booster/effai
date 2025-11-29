@@ -155,12 +155,54 @@ async def get_review_item(item_id: str):
 @router.post("/flag-item")
 async def flag_item_for_review(run_id: str, agent_id: str, payload: dict, reason: str):
     """
-    Flag an item for human review
+    Flag item for human review with AI-powered triage
     
-    Called by other agents when must_escalate=True
+    AI analyzes the item and assigns priority
     """
     try:
+        from ai_utils import AIProvider
+        
         db = get_mongo_db()
+        
+        # Use AI to analyze and prioritize the flagged item
+        provider = AIProvider(temperature=0.3)
+        
+        system_prompt = """You are SupportAgent, an AI triage specialist.
+        Analyze flagged items and determine priority and suggested action.
+        
+        Respond in JSON:
+        {
+          "priority": "critical|high|medium|low",
+          "suggested_action": "approve|reject|escalate|review",
+          "reasoning": "Brief explanation",
+          "estimated_review_time_min": 5
+        }
+        """
+        
+        user_prompt = f"""
+        Agent: {agent_id}
+        Flagged Reason: {reason}
+        Payload: {json.dumps(payload)[:500]}
+        
+        Analyze this flagged item and recommend priority and action.
+        """
+        
+        ai_response = await provider.generate(system_prompt, user_prompt, f"support_{run_id}")
+        
+        # Parse AI response
+        import json
+        import re
+        
+        priority = "medium"  # default
+        suggested_action = "review"
+        ai_reasoning = ""
+        
+        json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+        if json_match:
+            ai_data = json.loads(json_match.group())
+            priority = ai_data.get('priority', 'medium')
+            suggested_action = ai_data.get('suggested_action', 'review')
+            ai_reasoning = ai_data.get('reasoning', '')
         
         item = {
             "item_id": f"review_{run_id}_{agent_id}",
@@ -170,14 +212,25 @@ async def flag_item_for_review(run_id: str, agent_id: str, payload: dict, reason
             "provenance_ref": f"prov_{run_id}",
             "flagged_reason": reason,
             "status": "pending",
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "ai_triage": {
+                "priority": priority,
+                "suggested_action": suggested_action,
+                "reasoning": ai_reasoning,
+                "analyzed_by": "SupportAgent_AI"
+            }
         }
         
         await db.support_queue.insert_one(item)
         
-        logger.info(f"Item flagged for review: {item['item_id']} - {reason}")
+        logger.info(f"Item flagged with AI triage: {item['item_id']} - Priority: {priority}, Action: {suggested_action}")
         
-        return {"message": "Item flagged for review", "item_id": item["item_id"]}
+        return {
+            "message": "Item flagged for review",
+            "item_id": item["item_id"],
+            "ai_priority": priority,
+            "ai_suggested_action": suggested_action
+        }
         
     except Exception as e:
         logger.error(f"Failed to flag item: {e}")
