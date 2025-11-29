@@ -91,19 +91,19 @@ async def check_legal(input_data: LegalCheckInput):
 async def get_citation(citation_id: str):
     """Retrieve full citation details"""
     try:
-        pool = get_pg_pool()
+        db = get_mongo_db()
         
-        async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT * FROM legal_rules WHERE rule_code = $1",
-                citation_id
-            )
-            
-            if not row:
-                raise HTTPException(status_code=404, detail="Citation not found")
-            
-            return dict(row)
-            
+        row = await db.legal_rules.find_one({'rule_code': citation_id})
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="Citation not found")
+        
+        # Convert MongoDB _id to string if present
+        if '_id' in row:
+            row['_id'] = str(row['_id'])
+        
+        return row
+        
     except HTTPException:
         raise
     except Exception as e:
