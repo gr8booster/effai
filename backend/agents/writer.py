@@ -8,8 +8,12 @@ from jinja2 import Template
 from typing import Dict, Any
 import os
 import tempfile
-from weasyprint import HTML, CSS
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
 from datetime import datetime, timedelta, timezone
+import re
 
 from schemas import (
     WriterGenerateInput,
