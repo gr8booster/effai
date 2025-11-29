@@ -13,6 +13,47 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			// EEFai Custom Color Palette
+  			primary: {
+  				'50': '#E8F4F8',
+  				'100': '#D1E9F1',
+  				'200': '#A3D3E3',
+  				'300': '#75BDD5',
+  				'400': '#47A7C7',
+  				'500': '#2B8BA8',
+  				'600': '#236F86',
+  				'700': '#1B5364',
+  				'800': '#133742',
+  				'900': '#0B1B21',
+  				DEFAULT: 'hsl(var(--primary))',
+  				foreground: 'hsl(var(--primary-foreground))'
+  			},
+  			secondary: {
+  				'50': '#F0F7F4',
+  				'100': '#E1EFE9',
+  				'200': '#C3DFD3',
+  				'300': '#A5CFBD',
+  				'400': '#87BFA7',
+  				'500': '#66A88E',
+  				'600': '#528672',
+  				'700': '#3E6556',
+  				'800': '#2A433A',
+  				'900': '#15221D',
+  				DEFAULT: 'hsl(var(--secondary))',
+  				foreground: 'hsl(var(--secondary-foreground))'
+  			},
+  			neutral: {
+  				'50': '#F9FAFB',
+  				'100': '#F3F4F6',
+  				'200': '#E5E7EB',
+  				'300': '#D1D5DB',
+  				'400': '#9CA3AF',
+  				'500': '#6B7280',
+  				'600': '#4B5563',
+  				'700': '#374151',
+  				'800': '#1F2937',
+  				'900': '#111827'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -22,14 +63,6 @@ module.exports = {
   			popover: {
   				DEFAULT: 'hsl(var(--popover))',
   				foreground: 'hsl(var(--popover-foreground))'
-  			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
-  			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
   			},
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
