@@ -436,15 +436,16 @@ async def generate_tasks(input_data: MentorGenerateTasksInput):
         
         # Store tasks
         db = get_mongo_db()
-        task_docs = [{\n            \"task_id\": task.task_id,
-            \"user_id\": input_data.user_id,
-            \"plan_id\": input_data.plan_id,
-            \"milestone_id\": input_data.milestone_id,
-            \"description\": task.description,
-            \"time_est_min\": task.time_est_min,
-            \"resources\": task.resources,
-            \"status\": \"pending\",
-            \"created_at\": datetime.now(timezone.utc).isoformat()
+        task_docs = [{
+            "task_id": task.task_id,
+            "user_id": input_data.user_id,
+            "plan_id": input_data.plan_id,
+            "milestone_id": input_data.milestone_id,
+            "description": task.description,
+            "time_est_min": task.time_est_min,
+            "resources": task.resources,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
         } for task in tasks]
         
         if task_docs:
