@@ -40,6 +40,7 @@ const CreditImprovement = () => {
     <div className="min-h-screen bg-neutral-50 p-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Credit Improvement</h1>
+        <Disclaimer page="credit" />
         
         {/* Score Widget */}
         <div className="bg-white rounded-lg p-8 mb-6 border shadow-sm">
