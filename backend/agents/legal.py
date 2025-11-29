@@ -11,7 +11,7 @@ from schemas import (
     LegalCitation,
     Severity
 )
-from database import get_pg_pool
+from database import get_mongo_db
 
 logger = logging.getLogger(__name__)
 
