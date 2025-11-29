@@ -16,9 +16,9 @@ from math_utils import (
     calculate_snowball_payoff,
     calculate_avalanche_payoff,
     generate_savings_schedule,
-    generate_checksum,
     calculate_dti
 )
+from canonical_json import payload_hash, verify_payload_hash
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +74,14 @@ async def simulate_scenario(input_data: CFPSimulateInput):
             paydown_schedule=paydown_schedule
         )
         
-        # Generate checksum for verification
+        # Generate checksum using canonical JSON for determinism
         checksum_data = {
             "income": scenario.income,
             "expenses": scenario.expenses,
             "monthly_surplus": monthly_surplus,
             "cfp_version": CFP_VERSION
         }
-        checksum = generate_checksum(checksum_data)
+        checksum = payload_hash(checksum_data)
         
         # Assumptions
         assumptions = [
@@ -116,10 +116,8 @@ async def verify_calculations(input_data: CFPVerifyInput):
     Ensures deterministic, tamper-proof calculations
     """
     try:
-        # Regenerate checksum from calculations
-        actual_checksum = generate_checksum(input_data.calculations)
-        
-        verified = actual_checksum == input_data.expected_checksum
+        # Use canonical JSON for verification
+        verified = verify_payload_hash(input_data.calculations, input_data.expected_checksum)
         
         result = CFPVerifyOutput(
             ok=True,
