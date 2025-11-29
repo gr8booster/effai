@@ -6,7 +6,7 @@ IFS=$'\n\t'
 # Save as: /infra/master_build.sh
 # Usage: ./infra/master_build.sh
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}").." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARTIFACTS_DIR="$REPO_ROOT/artifacts"
 SPRINT_DIR="$ARTIFACTS_DIR/sprints"
 DOCKER_COMPOSE_FILE="$REPO_ROOT/infra/docker-compose.yml"
