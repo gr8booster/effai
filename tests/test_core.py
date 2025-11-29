@@ -232,8 +232,10 @@ async def test_audit_log(session):
     """Test 5: Audit Agent provenance tracking"""
     print_info("Test 5: Audit Agent Provenance Logging")
     
+    now = datetime.now(timezone.utc)
+    
     payload = {
-        "provenance_id": f"prov_test_{datetime.now().timestamp()}",
+        "provenance_id": f"prov_test_{now.timestamp()}",
         "agent_id": "TestAgent",
         "agent_version": "1.0",
         "input_hash": "abc123def456",
@@ -243,7 +245,7 @@ async def test_audit_log(session):
         "db_refs": {"test": "ref"},
         "legal_db_version": "v1.0",
         "cfp_version": "v1.0",
-        "timestamp": datetime.now(timezone.utc),
+        "timestamp": now.isoformat(),
         "human_reviewed": False
     }
     
