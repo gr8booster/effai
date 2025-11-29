@@ -24,19 +24,15 @@ HMAC_KEY = os.environ.get('EMERGENT_LLM_KEY', 'default-hmac-key').encode()
 
 @router.post("/log", response_model=AuditLogOutput)
 async def log_provenance(input_data: AuditLogInput):
-    """
-    Create immutable provenance record
-    
-    All agent actions must log provenance before user-facing output
-    """
+    """Create immutable provenance record in MongoDB"""
     try:
-        # Ensure timestamp is timezone-aware UTC
+        # Ensure timestamp is UTC
         if input_data.timestamp.tzinfo is None:
             timestamp_utc = input_data.timestamp.replace(tzinfo=timezone.utc)
         else:
             timestamp_utc = input_data.timestamp.astimezone(timezone.utc)
         
-        # Generate HMAC signature using canonical JSON
+        # Generate HMAC signature
         signature_data = canonical_json({
             "provenance_id": input_data.provenance_id,
             "input_hash": input_data.input_hash,
@@ -45,40 +41,24 @@ async def log_provenance(input_data: AuditLogInput):
         })
         hmac_signature = hmac_sign(HMAC_KEY, signature_data)
         
-        # Store in PostgreSQL (immutable) with TIMESTAMPTZ
-        pool = get_pg_pool()
-        async with pool.acquire() as conn:
-            await conn.execute("""
-                INSERT INTO audit_log (
-                    provenance_id, agent_id, agent_version,
-                    input_hash, output_hash, s3_input_path, s3_output_path,
-                    db_refs, legal_db_version, cfp_version,
-                    timestamp, human_reviewed, hmac_signature
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12, $13)
-            """,
-                input_data.provenance_id,
-                input_data.agent_id,
-                input_data.agent_version,
-                input_data.input_hash,
-                input_data.output_hash,
-                input_data.s3_input_path,
-                input_data.s3_output_path,
-                json.dumps(input_data.db_refs) if input_data.db_refs else None,
-                input_data.legal_db_version,
-                input_data.cfp_version,
-                timestamp_utc,  # Now TIMESTAMPTZ compatible
-                input_data.human_reviewed,
-                hmac_signature
-            )
-        
-        # Also store in MongoDB for quick access
+        # Store in MongoDB (single source of truth)
         db = get_mongo_db()
         await db.audit_log.insert_one({
             "provenance_id": input_data.provenance_id,
             "agent_id": input_data.agent_id,
+            "agent_version": input_data.agent_version,
+            "input_hash": input_data.input_hash,
+            "output_hash": input_data.output_hash,
+            "s3_input_path": input_data.s3_input_path,
+            "s3_output_path": input_data.s3_output_path,
+            "db_refs": input_data.db_refs,
+            "legal_db_version": input_data.legal_db_version,
+            "cfp_version": input_data.cfp_version,
             "timestamp_utc": timestamp_utc.isoformat(),
-            "display_ts": timestamp_utc.isoformat(),  # For UI display
-            "hmac_signature": hmac_signature
+            "display_ts": timestamp_utc.isoformat(),
+            "human_reviewed": input_data.human_reviewed,
+            "hmac_signature": hmac_signature,
+            "created_at": datetime.now(timezone.utc).isoformat()
         })
         
         result = AuditLogOutput(
