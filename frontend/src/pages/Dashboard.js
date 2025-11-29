@@ -13,11 +13,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('eefai_user') || '{}');
-  const userId = user.email || 'test_user_001';
+  const userId = user.email || 'guest';
 
   useEffect(() => {
+    if (userId === 'guest') {
+      navigate('/login');
+      return;
+    }
     loadDashboardData();
   }, []);
 
@@ -30,41 +33,28 @@ const Dashboard = () => {
       const stateRes = await axios.get(`${API_URL}/api/eefai/${userId}/state`);
       setUserData(stateRes.data);
       
-      // Load financial plan from CFP-AI
+      // Load financial plan
       const planRes = await axios.post(`${API_URL}/api/cfp/simulate`, {
         user_id: userId,
         scenario: {
           balances: stateRes.data.profile?.debts || [],
           income: stateRes.data.profile?.income || 0,
           expenses: stateRes.data.profile?.expenses || 0,
-          goal: {
-            type: 'emergency',
-            amount: 1000,
-            deadline_days: 90
-          }
+          goal: { type: 'emergency', amount: 1000, deadline_days: 90 }
         },
-        trace_id: `dashboard_load_${Date.now()}`
+        trace_id: `dashboard_${Date.now()}`
       });
       setFinancialPlan(planRes.data);
       
-      // Load tasks from MentorAgent
-      const tasksRes = await axios.get(`${API_URL}/api/mentor/tasks/active`, {
-        params: { user_id: userId }
-      });
+      // Load REAL active tasks from backend
+      const tasksRes = await axios.get(`${API_URL}/api/mentor/tasks/active?user_id=${userId}`);
       setTasks(tasksRes.data.tasks || []);
       
     } catch (err) {
-      console.error('Dashboard load error:', err);
+      console.error('Dashboard error:', err);
       setError(err.message);
-      // Fallback to localStorage data if API fails
-      if (user.income) {
-        setUserData({ profile: user });
-        setFinancialPlan({
-          calculations: {
-            monthly_surplus: user.income - user.expenses
-          }
-        });
-      }
+      setUserData({ profile: user });
+      setFinancialPlan({ calculations: { monthly_surplus: (user.income || 0) - (user.expenses || 0) } });
     } finally {
       setLoading(false);
     }
@@ -72,13 +62,11 @@ const Dashboard = () => {
 
   const handleTaskComplete = async (taskId) => {
     try {
-      await axios.post(`${API_URL}/api/mentor/tasks/${taskId}/complete`, null, {
-        params: { user_id: userId }
-      });
-      // Reload dashboard to refresh tasks and streak
+      await axios.post(`${API_URL}/api/mentor/tasks/${taskId}/complete?user_id=${userId}`);
       await loadDashboardData();
     } catch (err) {
-      console.error('Task completion error:', err);
+      console.error('Task error:', err);
+      alert('Failed to complete task');
     }
   };
 
@@ -87,121 +75,92 @@ const Dashboard = () => {
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mb-4"></div>
-          <p className="text-neutral-600">Loading your financial dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !userData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <div className="text-center max-w-md">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-2">Unable to load dashboard</h2>
-          <p className="text-neutral-600 mb-4">{error}</p>
-          <button
-            onClick={loadDashboardData}
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-          >
-            Retry
-          </button>
+          <p className="text-neutral-600">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   const profile = userData?.profile || user;
-  const monthlySurplus = financialPlan?.calculations?.monthly_surplus || (profile.income - profile.expenses);
+  const monthlySurplus = financialPlan?.calculations?.monthly_surplus || ((profile.income || 0) - (profile.expenses || 0));
   const currentSavings = profile.savings || 0;
   const emergencyGoal = 1000;
-  const savingsProgress = (currentSavings / emergencyGoal) * 100;
-  const activeDebts = profile.debts?.length || 0;
-  const totalDebt = profile.debts?.reduce((sum, d) => sum + (d.balance || 0), 0) || 0;
+  const savingsProgress = Math.min((currentSavings / emergencyGoal) * 100, 100);
+  const activeDebts = (profile.debts || []).length;
+  const totalDebt = (profile.debts || []).reduce((sum, d) => sum + (d.balance || 0), 0);
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-primary-600">EEFai</h1>
             <nav className="flex gap-4">
-              <button onClick={() => navigate('/upload')} className="text-neutral-600 hover:text-primary-600 text-sm" data-testid="nav-upload">
-                Upload
-              </button>
-              <button onClick={() => navigate('/letters')} className="text-neutral-600 hover:text-primary-600 text-sm" data-testid="nav-letters">
-                Letters
-              </button>
-              <button onClick={() => navigate('/learning')} className="text-neutral-600 hover:text-primary-600 text-sm" data-testid="nav-learning">
-                Learning
-              </button>
-              <button onClick={() => navigate('/credit')} className="text-neutral-600 hover:text-primary-600 text-sm" data-testid="nav-credit">
-                Credit
-              </button>
+              <button onClick={() => navigate('/upload')} className="text-neutral-600 hover:text-primary-600 text-sm">Upload</button>
+              <button onClick={() => navigate('/letters')} className="text-neutral-600 hover:text-primary-600 text-sm">Letters</button>
+              <button onClick={() => navigate('/learning')} className="text-neutral-600 hover:text-primary-600 text-sm">Learning</button>
+              <button onClick={() => navigate('/credit')} className="text-neutral-600 hover:text-primary-600 text-sm">Credit</button>
             </nav>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Legal Disclaimer */}
         <Disclaimer page="general" />
         
-        {/* Welcome */}
         <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-6 mb-6 border border-primary-200">
           <h2 className="text-xl font-semibold text-primary-900 mb-2">Welcome Back, {profile.name || 'Friend'}!</h2>
-          <p className="text-primary-800">EEFai is here to help you build financial stability.</p>
+          <p className="text-primary-800">Your personalized financial plan powered by 9 AI agents.</p>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {/* Emergency Fund */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200" data-testid="widget-emergency-fund">
+          <div className="bg-white rounded-lg p-6 shadow-sm border">
             <h3 className="text-sm font-medium text-neutral-600 mb-2">Emergency Fund</h3>
             <div className="text-3xl font-bold text-neutral-900 font-mono">${currentSavings}</div>
             <div className="mt-2 text-sm text-neutral-500">Goal: ${emergencyGoal}</div>
-            <div className="mt-3 w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
-              <div 
-                className="h-2 bg-secondary-500 rounded-full transition-all duration-500"
-                style={{width: `${Math.min(savingsProgress, 100)}%`}}
-              />
+            <div className="mt-3 w-full h-2 bg-neutral-200 rounded-full">
+              <div className="h-2 bg-secondary-500 rounded-full" style={{width: `${savingsProgress}%`}} />
             </div>
             <div className="mt-2 text-xs text-secondary-600">{Math.round(savingsProgress)}% complete</div>
           </div>
 
-          {/* Monthly Surplus */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200" data-testid="widget-surplus">
+          <div className="bg-white rounded-lg p-6 shadow-sm border">
             <h3 className="text-sm font-medium text-neutral-600 mb-2">Monthly Surplus</h3>
             <div className="text-3xl font-bold text-neutral-900 font-mono">${monthlySurplus}</div>
-            <div className="mt-2 text-sm text-secondary-600">Available for savings/debt</div>
-            <div className="mt-3 text-xs text-neutral-500">
-              Income: ${profile.income} - Expenses: ${profile.expenses}
-            </div>
+            <div className="mt-2 text-sm text-secondary-600">Available for goals</div>
+            <div className="mt-3 text-xs text-neutral-500">Income ${profile.income || 0} - Expenses ${profile.expenses || 0}</div>
           </div>
 
-          {/* Active Debts */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200" data-testid="widget-debts">
+          <div className="bg-white rounded-lg p-6 shadow-sm border">
             <h3 className="text-sm font-medium text-neutral-600 mb-2">Active Debts</h3>
             <div className="text-3xl font-bold text-neutral-900 font-mono">{activeDebts}</div>
             <div className="mt-2 text-sm text-neutral-500">Total: ${totalDebt.toFixed(2)}</div>
-            {activeDebts > 0 && (
-              <button className="mt-3 text-xs text-primary-600 hover:text-primary-700 font-medium">
-                View payoff plan →
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Daily Tasks */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200 mb-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm border mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-neutral-900">Today's Tasks</h2>
-            <span className="text-sm text-neutral-500">{tasks.filter(t => !t.completed).length} remaining</span>
+            <h2 className="text-xl font-semibold text-neutral-900">Your Tasks (Powered by MentorAgent)</h2>
+            <span className="text-sm text-neutral-500">{tasks.filter(t => t.status !== 'completed').length} active</span>
           </div>
           
           {tasks.length === 0 ? (
-            <div className="text-center py-8 text-neutral-500">
-              <p>Loading tasks...</p>
+            <div className="text-center py-8">
+              <p className="text-neutral-500 mb-4">No active tasks. Great job staying on top of things!</p>
+              <button 
+                onClick={async () => {
+                  await axios.post(`${API_URL}/api/mentor/generate-tasks`, {
+                    user_id: userId,
+                    plan_id: 'default',
+                    milestone_id: 'emergency_fund_start',
+                    trace_id: `gen_${Date.now()}`
+                  });
+                  await loadDashboardData();
+                }}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              >
+                Generate New Tasks
+              </button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -211,18 +170,15 @@ const Dashboard = () => {
                     type="checkbox" 
                     checked={task.status === 'completed'}
                     onChange={() => handleTaskComplete(task.task_id)}
-                    className="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                    data-testid={`task-checkbox-${task.task_id}`}
+                    className="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500 cursor-pointer"
                   />
                   <div className="flex-1">
                     <div className="font-medium text-neutral-900">{task.description}</div>
-                    <div className="text-sm text-neutral-500 mt-1">
-                      <span className="inline-flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {task.time_est_min} minutes
-                      </span>
+                    <div className="text-sm text-neutral-500 mt-1 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {task.time_est_min} min
                     </div>
                   </div>
                 </div>
@@ -231,50 +187,30 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            onClick={() => navigate('/upload')}
-            className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200 hover:border-primary-300 hover:shadow-md transition-all text-left group"
-            data-testid="action-upload"
-          >
+          <button onClick={() => navigate('/upload')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center group-hover:bg-primary-200 transition-colors">
-                <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center group-hover:bg-primary-200">
+                <span className="text-2xl">📄</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-neutral-900 mb-1">Upload Debt Letter</h3>
-                <p className="text-neutral-600 text-sm">Get instant FDCPA analysis and response drafts</p>
+                <p className="text-neutral-600 text-sm">OCR analysis via IntakeAgent</p>
               </div>
             </div>
           </button>
 
-          <button
-            onClick={() => navigate('/letters')}
-            className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200 hover:border-primary-300 hover:shadow-md transition-all text-left group"
-            data-testid="action-letters"
-          >
+          <button onClick={() => navigate('/letters')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center group-hover:bg-secondary-200 transition-colors">
-                <svg className="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center group-hover:bg-secondary-200">
+                <span className="text-2xl">✍️</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-neutral-900 mb-1">Generate Letter</h3>
-                <p className="text-neutral-600 text-sm">Create debt validation or dispute letters</p>
+                <p className="text-neutral-600 text-sm">4 templates via WriterAgent</p>
               </div>
             </div>
           </button>
-        </div>
-
-        {/* Data Source Indicator */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-neutral-400">
-            Data powered by EEFai's 9 AI agents • Last updated: {new Date().toLocaleTimeString()}
-          </p>
         </div>
       </main>
     </div>
