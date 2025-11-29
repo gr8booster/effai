@@ -13,6 +13,9 @@ load_dotenv(ROOT_DIR / '.env')
 # Import database connections
 from database import init_databases, close_databases
 
+# Import security middleware
+from security_middleware import SecurityHeadersMiddleware, RateLimitMiddleware
+
 # Import all agent routers
 from agents import orchestrator, legal, cfp, writer, intake, eefai, mentor, support, audit, static_routes
 
