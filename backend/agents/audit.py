@@ -38,6 +38,13 @@ async def log_provenance(input_data: AuditLogInput):
             hashlib.sha256
         ).hexdigest()
         
+        # Convert timestamp to UTC if needed
+        if input_data.timestamp.tzinfo is None:
+            # Naive datetime, assume UTC
+            timestamp_utc = input_data.timestamp.replace(tzinfo=timezone.utc)
+        else:
+            timestamp_utc = input_data.timestamp
+        
         # Store in PostgreSQL (immutable)
         pool = get_pg_pool()
         async with pool.acquire() as conn:
@@ -59,7 +66,7 @@ async def log_provenance(input_data: AuditLogInput):
                 json.dumps(input_data.db_refs) if input_data.db_refs else None,
                 input_data.legal_db_version,
                 input_data.cfp_version,
-                input_data.timestamp,
+                timestamp_utc,
                 input_data.human_reviewed,
                 hmac_signature
             )
@@ -69,7 +76,7 @@ async def log_provenance(input_data: AuditLogInput):
         await db.audit_log.insert_one({
             "provenance_id": input_data.provenance_id,
             "agent_id": input_data.agent_id,
-            "timestamp": input_data.timestamp.isoformat(),
+            "timestamp": timestamp_utc.isoformat(),
             "hmac_signature": hmac_signature
         })
         
