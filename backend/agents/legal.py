@@ -4,6 +4,7 @@ import logging
 from typing import List
 from datetime import datetime, timedelta
 import json
+import re
 
 from schemas import (
     LegalCheckInput,
