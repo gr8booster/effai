@@ -118,42 +118,41 @@ async def check_statute_of_limitations(state: str, debt_type: str, account_date:
     Returns: (flag, citation) or (None, None)
     """
     try:
-        pool = get_pg_pool()
+        db = get_mongo_db()
         
-        async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT years FROM statute_of_limitations WHERE state_code = $1 AND debt_type = $2",
-                state.upper(),
-                debt_type.lower()
-            )
+        # Query MongoDB instead of PostgreSQL
+        row = await db.statute_of_limitations.find_one({
+            'state_code': state.upper(),
+            'debt_type': debt_type.lower()
+        })
+        
+        if not row:
+            # Default to 6 years if state-specific not found
+            sol_years = 6
+        else:
+            sol_years = row['years']
+        
+        # Check if account is past SOL
+        if account_date:
+            account_dt = datetime.fromisoformat(account_date)
+            sol_date = account_dt + timedelta(days=sol_years*365)
             
-            if not row:
-                # Default to 6 years if state-specific not found
-                sol_years = 6
-            else:
-                sol_years = row['years']
-            
-            # Check if account is past SOL
-            if account_date:
-                account_dt = datetime.fromisoformat(account_date)
-                sol_date = account_dt + timedelta(days=sol_years*365)
+            if datetime.now() > sol_date:
+                flag = LegalFlag(
+                    code="SOL_EXPIRED",
+                    explanation=f"This debt is past the {sol_years}-year statute of limitations in {state}.",
+                    severity=Severity.LOW,
+                    citation_id="SOL_STATE"
+                )
                 
-                if datetime.now() > sol_date:
-                    flag = LegalFlag(
-                        code="SOL_EXPIRED",
-                        explanation=f"This debt is past the {sol_years}-year statute of limitations in {state}.",
-                        severity=Severity.LOW,
-                        citation_id="SOL_STATE"
-                    )
-                    
-                    citation = LegalCitation(
-                        id="SOL_STATE",
-                        title=f"{state} Statute of Limitations for {debt_type}",
-                        text_snippet=f"The statute of limitations for {debt_type} debts in {state} is {sol_years} years.",
-                        db_version=LEGAL_DB_VERSION
-                    )
-                    
-                    return (flag, citation)
+                citation = LegalCitation(
+                    id="SOL_STATE",
+                    title=f"{state} Statute of Limitations for {debt_type}",
+                    text_snippet=f"The statute of limitations for {debt_type} debts in {state} is {sol_years} years.",
+                    db_version=LEGAL_DB_VERSION
+                )
+                
+                return (flag, citation)
         
         return (None, None)
         
