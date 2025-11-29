@@ -96,6 +96,47 @@ async def get_document_result(doc_id: str):
     """Get document processing result"""
     try:
         db = get_mongo_db()
+
+
+def perform_ocr(file_content: bytes, filename: str) -> str:
+    """
+    Perform OCR on uploaded file using Tesseract
+    
+    Handles images (PNG, JPG) and PDFs
+    """
+    try:
+        # Try to open as image
+        image = Image.open(io.BytesIO(file_content))
+        
+        # Convert to grayscale and enhance for OCR
+        img_array = np.array(image)
+        
+        # Convert to grayscale if color
+        if len(img_array.shape) == 3:
+            gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = img_array
+        
+        # Apply thresholding to improve OCR accuracy
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        
+        # Perform OCR
+        text = pytesseract.image_to_string(thresh, config='--psm 6')
+        
+        logger.info(f"OCR completed: extracted {len(text)} characters from {filename}")
+        
+        return text
+        
+    except Exception as e:
+        logger.warning(f"OCR failed for {filename}: {e}. Trying text extraction...")
+        
+        # Fallback: try to decode as text
+        try:
+            text = file_content.decode('utf-8')
+            return text
+        except:
+            return f"[Unable to extract text from {filename}]"
+
         doc = await db.intake_documents.find_one({"doc_id": doc_id}, {"_id": 0})
         
         if not doc:
