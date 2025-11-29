@@ -42,15 +42,20 @@ def calculate_snowball_payoff(balances: List[Dict[str, Any]], monthly_surplus: f
     
     schedule = []
     surplus = Decimal(str(monthly_surplus))
+    current_date = datetime.now()
     
-    for balance in sorted_balances:
+    for idx, balance in enumerate(sorted_balances):
         payment = Decimal(str(balance.get('min_payment', balance['balance'] * 0.02)))
         total_payment = payment + surplus
+        
+        # Calculate payment date (staggered by month)
+        payment_date = current_date + timedelta(days=idx * 30)
         
         schedule.append({
             "account": balance['name'],
             "payment": float(total_payment),
-            "balance": balance['balance']
+            "balance": balance['balance'],
+            "date": payment_date.strftime('%Y-%m-%d')
         })
         
         # After this debt is paid, all its payment goes to next
