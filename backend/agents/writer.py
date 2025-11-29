@@ -153,13 +153,43 @@ async def generate_document(input_data: WriterGenerateInput):
         # Generate hash
         content_hash = hashlib.sha256(rendered_html.encode()).hexdigest()
         
+        # Generate PDF using WeasyPrint
+        pdf_path = None
+        try:
+            # Create temp file for PDF
+            temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf', dir='/tmp')
+            pdf_path = temp_pdf.name
+            temp_pdf.close()
+            
+            # Generate PDF from HTML
+            HTML(string=rendered_html).write_pdf(pdf_path)
+            
+            logger.info(f"PDF generated at {pdf_path}")
+            
+        except Exception as pdf_error:
+            logger.warning(f"PDF generation failed: {pdf_error}. Returning HTML only.")
+            pdf_path = None
+        
         result = WriterGenerateOutput(
             html_preview=rendered_html,
+            pdf_url=f"/api/writer/download/{content_hash}" if pdf_path else None,
             hash=content_hash,
             provenance_ref=f"writer_{input_data.trace_id}"
         )
         
-        logger.info(f"Document generated: template={input_data.template_id}, hash={content_hash[:8]}...")
+        # Store PDF path in MongoDB for download
+        if pdf_path:
+            db = get_mongo_db()
+            await db.generated_documents.insert_one({
+                "document_id": content_hash,
+                "pdf_path": pdf_path,
+                "template_id": input_data.template_id,
+                "user_id": input_data.user_id,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+            })
+        
+        logger.info(f"Document generated: template={input_data.template_id}, hash={content_hash[:8]}..., pdf={pdf_path is not None}")
         
         return result
         
