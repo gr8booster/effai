@@ -9,6 +9,7 @@ from typing import Dict, Any
 import os
 import tempfile
 from weasyprint import HTML, CSS
+from datetime import datetime, timedelta, timezone
 
 from schemas import (
     WriterGenerateInput,
