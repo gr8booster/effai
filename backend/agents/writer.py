@@ -228,6 +228,38 @@ async def get_template_metadata(template_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+@router.get("/download/{document_id}")
+async def download_pdf(document_id: str):
+    """Download generated PDF document"""
+    try:
+        db = get_mongo_db()
+        
+        # Get document record
+        doc = await db.generated_documents.find_one({"document_id": document_id})
+        
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found or expired")
+        
+        # Check if file exists
+        pdf_path = doc['pdf_path']
+        if not os.path.exists(pdf_path):
+            raise HTTPException(status_code=404, detail="PDF file not found")
+        
+        # Return PDF file
+        return FileResponse(
+            pdf_path,
+            media_type="application/pdf",
+            filename=f"debt_validation_{document_id[:8]}.pdf"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"PDF download failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def get_required_fields(template_id: str) -> list:
     """Get required fields for template"""
     template_fields = {
