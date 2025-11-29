@@ -95,6 +95,26 @@ async def review_item(item_id: str, review: SupportReviewInput):
                 }
             }
         )
+        
+        # Update provenance
+        await db.audit_log.update_one(
+            {"provenance_id": item["provenance_ref"]},
+            {"$set": {"human_reviewed": True, "review_decision": review.decision.value}}
+        )
+        
+        logger.info(f"Review completed: {item_id} - {review.decision.value}")
+        
+        return {
+            "message": "Review recorded",
+            "item_id": item_id,
+            "decision": review.decision.value
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Review failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/item/{item_id}/ai-suggestion")
