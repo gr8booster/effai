@@ -1,0 +1,66 @@
+name: EEFai CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: eef
+          POSTGRES_USER: eef
+          POSTGRES_PASSWORD: eef_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install backend deps
+        run: |
+          cd backend
+          pip install -r requirements.txt
+      
+      - name: Install frontend deps
+        run: |
+          cd frontend
+          yarn install
+      
+      - name: Run tests
+        run: |
+          python tests/test_core.py
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: eef-ci-artifacts
+          path: |
+            tests/sprint1_test_results.json
+            artifacts/
