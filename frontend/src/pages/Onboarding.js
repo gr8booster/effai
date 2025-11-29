@@ -4,6 +4,18 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+const AGENTS = [
+  { name: 'OrchestratorAI', desc: 'Coordinating your plan', icon: '🎯' },
+  { name: 'EEFai', desc: 'Analyzing your situation', icon: '🤝' },
+  { name: 'LegalAI', desc: 'Checking debt rights', icon: '⚖️' },
+  { name: 'CFP-AI', desc: 'Calculating finances', icon: '💰' },
+  { name: 'WriterAgent', desc: 'Preparing templates', icon: '✍️' },
+  { name: 'IntakeAgent', desc: 'Processing documents', icon: '📄' },
+  { name: 'MentorAgent', desc: 'Creating daily tasks', icon: '📚' },
+  { name: 'SupportAgent', desc: 'Ready to help', icon: '💬' },
+  { name: 'AuditAgent', desc: 'Securing your data', icon: '🔒' }
+];
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -12,46 +24,123 @@ const Onboarding = () => {
     email: '',
     phone: '',
     state: '',
-    dob: '',
     income: '',
     expenses: '',
-    debts: [],
     savings: ''
   });
   const [loading, setLoading] = useState(false);
+  const [agentProgress, setAgentProgress] = useState([]);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateStep = () => {
+    if (step === 1) {
+      return formData.name && formData.email && formData.phone && formData.state;
+    }
+    if (step === 2) {
+      return formData.income && formData.expenses;
+    }
+    if (step === 3) {
+      const consent1 = document.getElementById('consent1')?.checked;
+      const consent2 = document.getElementById('consent2')?.checked;
+      const consent3 = document.getElementById('consent3')?.checked;
+      return consent1 && consent2 && consent3;
+    }
+    return true;
+  };
+
   const handleNext = () => {
-    if (step < 4) setStep(step + 1);
+    if (!validateStep()) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    if (step < 4) {
+      setStep(step + 1);
+    }
   };
 
   const handleBack = () => {
     if (step > 1) setStep(step - 1);
   };
 
+  const simulateAgentWork = async () => {
+    setAnalyzing(true);
+    
+    for (let i = 0; i < AGENTS.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      setAgentProgress(prev => [...prev, i]);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!validateStep()) {
+      alert('Please accept all consent terms');
+      return;
+    }
+    
     setLoading(true);
+    
+    // Show 9 agents working
+    await simulateAgentWork();
+    
     try {
-      // Create EEFai instance
+      // Create EEFai instance with full profile
       await axios.post(`${API_URL}/api/eefai/create?user_id=${formData.email}`);
       
-      // Send initial message to set up profile
+      // Generate initial financial plan via CFP-AI
+      const planResponse = await axios.post(`${API_URL}/api/cfp/simulate`, {
+        user_id: formData.email,
+        scenario: {
+          balances: [],
+          income: parseFloat(formData.income),
+          expenses: parseFloat(formData.expenses),
+          goal: {
+            type: 'emergency',
+            amount: 1000,
+            deadline_days: 90
+          }
+        },
+        trace_id: `onboard_${Date.now()}`
+      });
+      
+      // Generate initial tasks via MentorAgent
+      await axios.post(`${API_URL}/api/mentor/generate-tasks`, {
+        user_id: formData.email,
+        plan_id: 'initial_plan',
+        milestone_id: 'emergency_fund_start',
+        trace_id: `onboard_tasks_${Date.now()}`
+      });
+      
+      // Send profile message to EEFai
       await axios.post(`${API_URL}/api/eefai/${formData.email}/message`, {
         user_id: formData.email,
-        message: `Hello! My name is ${formData.name}. I live in ${formData.state}. My monthly income is $${formData.income} and expenses are $${formData.expenses}. I currently have $${formData.savings} in savings.`,
-        trace_id: `onboard_${Date.now()}`,
+        message: `Profile: ${formData.name}, ${formData.state}. Income: $${formData.income}, Expenses: $${formData.expenses}, Savings: $${formData.savings}`,
+        trace_id: `profile_${Date.now()}`,
         attachments: []
       });
+      
+      // Store form data in localStorage for dashboard access
+      localStorage.setItem('eefai_user', JSON.stringify({
+        email: formData.email,
+        name: formData.name,
+        state: formData.state,
+        income: formData.income,
+        expenses: formData.expenses,
+        savings: formData.savings,
+        onboarded: true,
+        onboarded_at: new Date().toISOString()
+      }));
       
       navigate('/dashboard');
     } catch (error) {
       console.error('Onboarding error:', error);
-      alert('Error during onboarding. Please try again.');
-    } finally {
+      alert('Error during setup. Please try again.');
       setLoading(false);
+      setAnalyzing(false);
+      setAgentProgress([]);
     }
   };
 
@@ -133,6 +222,9 @@ const Onboarding = () => {
                   <option value="OH">Ohio</option>
                   <option value="TX">Texas</option>
                   <option value="PA">Pennsylvania</option>
+                  <option value="GA">Georgia</option>
+                  <option value="NC">North Carolina</option>
+                  <option value="MI">Michigan</option>
                 </select>
               </div>
             </div>
@@ -216,14 +308,14 @@ const Onboarding = () => {
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent1" className="mt-1" required data-testid="checkbox-consent-1" />
                   <label htmlFor="consent1" className="text-sm text-neutral-700">
-                    I understand that EEFai provides educational information and tools. This is not legal or financial advice.
+                    I understand that EEFai provides educational information. This is not legal or financial advice.
                   </label>
                 </div>
                 
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent2" className="mt-1" required data-testid="checkbox-consent-2" />
                   <label htmlFor="consent2" className="text-sm text-neutral-700">
-                    I consent to EEFai storing my financial information securely.
+                    I consent to EEFai storing my information securely.
                   </label>
                 </div>
                 
@@ -238,7 +330,7 @@ const Onboarding = () => {
               <div className="mt-4 pt-4 border-t border-neutral-200">
                 <h4 className="font-medium text-neutral-900 text-sm mb-1">FDCPA Notice</h4>
                 <p className="text-xs text-neutral-600">
-                  Under the FDCPA, you have the right to request validation of any debt. EEFai helps you exercise these rights.
+                  Under the FDCPA, you have rights. EEFai helps you exercise them.
                 </p>
               </div>
             </div>
@@ -249,26 +341,26 @@ const Onboarding = () => {
         return (
           <div className="space-y-4" data-testid="onboarding-step-4">
             <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 font-heading">You're All Set!</h2>
-            <p className="text-neutral-600 text-sm sm:text-base">EEFai will now create your personalized financial plan.</p>
+            <p className="text-neutral-600 text-sm sm:text-base">EEFai will create your personalized plan.</p>
             
             <div className="bg-primary-50 p-4 sm:p-6 rounded-lg border border-primary-200">
               <h3 className="font-semibold text-primary-900 mb-2 text-sm sm:text-base">What Happens Next?</h3>
               <ul className="space-y-1.5 text-sm text-primary-800">
                 <li className="flex items-start gap-2">
                   <span className="text-primary-600 font-bold">✓</span>
-                  <span>EEFai will analyze your financial situation</span>
+                  <span>EEFai analyzes your financial situation</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-600 font-bold">✓</span>
-                  <span>You'll get a personalized emergency fund goal</span>
+                  <span>Personalized emergency fund goal</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-600 font-bold">✓</span>
-                  <span>Daily micro-tasks will help you build better habits</span>
+                  <span>Daily micro-tasks for better habits</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-600 font-bold">✓</span>
-                  <span>You can upload debt letters for instant analysis</span>
+                  <span>Upload debt letters for analysis</span>
                 </li>
               </ul>
             </div>
@@ -279,6 +371,44 @@ const Onboarding = () => {
         return null;
     }
   };
+
+  // Agent Analysis Modal
+  if (analyzing) {
+    return (
+      <div className="min-h-screen bg-neutral-900 bg-opacity-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full">
+          <h2 className="text-2xl font-bold text-center text-neutral-900 mb-6">Creating Your Plan</h2>
+          
+          <div className="space-y-3 mb-6">
+            {AGENTS.map((agent, idx) => (
+              <div 
+                key={agent.name}
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
+                  agentProgress.includes(idx) 
+                    ? 'bg-primary-50 border-2 border-primary-300' 
+                    : 'bg-neutral-50 border border-neutral-200 opacity-50'
+                }`}
+              >
+                <span className="text-2xl">{agent.icon}</span>
+                <div className="flex-1">
+                  <div className="font-medium text-sm text-neutral-900">{agent.name}</div>
+                  <div className="text-xs text-neutral-600">{agent.desc}</div>
+                </div>
+                {agentProgress.includes(idx) && (
+                  <span className="text-primary-600 font-bold text-lg">✓</span>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-200 border-t-primary-600"></div>
+            <p className="mt-4 text-sm text-neutral-600">Analyzing your finances...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
@@ -307,12 +437,13 @@ const Onboarding = () => {
         </div>
       </div>
           
-      {/* Buttons - Fixed at bottom with safe area for Emergent badge */}
+      {/* Buttons - Fixed at bottom with safe area */}
       <div className="bg-white border-t border-neutral-200 px-4 py-4 sm:px-6 pb-20">
         <div className="max-w-2xl mx-auto flex gap-3">
           {step > 1 && (
             <button
               onClick={handleBack}
+              type="button"
               className="flex-1 px-6 py-3 border-2 border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors font-medium"
               data-testid="button-back"
             >
@@ -323,6 +454,7 @@ const Onboarding = () => {
           {step < 4 ? (
             <button
               onClick={handleNext}
+              type="button"
               className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm"
               data-testid="button-next"
             >
@@ -331,11 +463,12 @@ const Onboarding = () => {
           ) : (
             <button
               onClick={handleSubmit}
+              type="button"
               disabled={loading}
               className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm disabled:opacity-50"
               data-testid="button-submit"
             >
-              {loading ? 'Setting up...' : 'Get Started'}
+              {loading ? 'Processing...' : 'Get Started'}
             </button>
           )}
         </div>
