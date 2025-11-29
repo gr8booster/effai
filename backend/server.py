@@ -34,7 +34,20 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing EEFai platform...")
     await init_databases()
     logger.info("All databases connected")
+    
+    # Initialize event bus
+    from event_bus import event_bus, register_event_handlers
+    register_event_handlers()
+    logger.info("Event bus initialized")
+    
+    # Initialize job queue
+    from job_queue import job_queue, register_all_workers
+    await job_queue.connect()
+    register_all_workers()
+    logger.info("Job queue initialized")
+    
     yield
+    
     # Shutdown
     logger.info("Shutting down EEFai platform...")
     await close_databases()
