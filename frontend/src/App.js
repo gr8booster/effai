@@ -21,6 +21,7 @@ function App() {
           <Route path="/letters" element={<LetterBuilder />} />
           <Route path="/learning" element={<MicroLearning />} />
           <Route path="/admin" element={<AdminConsole />} />
+          <Route path="/credit" element={<CreditImprovement />} />
         </Routes>
       </div>
     </Router>
