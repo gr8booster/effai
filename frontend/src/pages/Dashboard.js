@@ -47,11 +47,8 @@ const Dashboard = () => {
       setFinancialPlan(planRes.data);
       
       // Load tasks from MentorAgent
-      const tasksRes = await axios.post(`${API_URL}/api/mentor/generate-tasks`, {
-        user_id: userId,
-        plan_id: stateRes.data.current_plan_id || 'default_plan',
-        milestone_id: 'emergency_fund_start',
-        trace_id: `tasks_load_${Date.now()}`
+      const tasksRes = await axios.get(`${API_URL}/api/mentor/tasks/active`, {
+        params: { user_id: userId }
       });
       setTasks(tasksRes.data.tasks || []);
       
