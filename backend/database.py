@@ -105,10 +105,10 @@ async def init_pg_schema():
                 db_refs JSONB,
                 legal_db_version VARCHAR(50),
                 cfp_version VARCHAR(50),
-                timestamp TIMESTAMP NOT NULL,
+                timestamp TIMESTAMPTZ NOT NULL,
                 human_reviewed BOOLEAN DEFAULT FALSE,
                 hmac_signature VARCHAR(500) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
             )
         """)
         
