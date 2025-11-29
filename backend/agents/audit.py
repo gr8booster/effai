@@ -78,22 +78,16 @@ async def log_provenance(input_data: AuditLogInput):
 
 @router.get("/{provenance_id}")
 async def get_provenance(provenance_id: str):
-    """
-    Retrieve full provenance record
-    """
+    """Retrieve full provenance record from MongoDB"""
     try:
-        pool = get_pg_pool()
-        async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT * FROM audit_log WHERE provenance_id = $1",
-                provenance_id
-            )
-            
-            if not row:
-                raise HTTPException(status_code=404, detail="Provenance record not found")
-            
-            return dict(row)
-            
+        db = get_mongo_db()
+        row = await db.audit_log.find_one({'provenance_id': provenance_id}, {'_id': 0})
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="Provenance record not found")
+        
+        return row
+        
     except HTTPException:
         raise
     except Exception as e:
@@ -103,48 +97,37 @@ async def get_provenance(provenance_id: str):
 
 @router.post("/verify", response_model=AuditVerifyOutput)
 async def verify_provenance(input_data: AuditVerifyInput):
-    """
-    Verify that output matches stored provenance hash
-    
-    Detects tampering or unauthorized modifications
-    """
+    """Verify output matches stored provenance hash"""
     try:
-        pool = get_pg_pool()
+        db = get_mongo_db()
         
         # Get stored provenance
-        async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT output_hash, hmac_signature FROM audit_log WHERE provenance_id = $1",
-                input_data.provenance_id
-            )
-            
-            if not row:
-                return AuditVerifyOutput(
-                    ok=True,
-                    verified=False,
-                    message="Provenance record not found"
-                )
-            
-            stored_hash = row['output_hash']
-            
-            # Compare hashes
-            verified = stored_hash == input_data.output_hash
-            
-            if verified:
-                message = "Output verified - hash matches provenance record"
-            else:
-                message = f"VERIFICATION FAILED - Hash mismatch. Expected: {stored_hash}, Got: {input_data.output_hash}"
-            
-            result = AuditVerifyOutput(
+        row = await db.audit_log.find_one({'provenance_id': input_data.provenance_id})
+        
+        if not row:
+            return AuditVerifyOutput(
                 ok=True,
-                verified=verified,
-                message=message
+                verified=False,
+                message="Provenance record not found"
             )
-            
-            logger.info(f"Provenance verification: {message}")
-            
-            return result
-            
+        
+        stored_hash = row['output_hash']
+        
+        # Compare hashes
+        verified = stored_hash == input_data.output_hash
+        
+        message = "Output verified - hash matches" if verified else f"VERIFICATION FAILED - Hash mismatch"
+        
+        result = AuditVerifyOutput(
+            ok=True,
+            verified=verified,
+            message=message
+        )
+        
+        logger.info(f"Provenance verification: {message}")
+        
+        return result
+        
     except Exception as e:
         logger.error(f"Verification failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -152,22 +135,17 @@ async def verify_provenance(input_data: AuditVerifyInput):
 
 @router.get("/recent/{limit}")
 async def get_recent_provenance(limit: int = 10):
-    """
-    Get recent provenance records
-    """
+    """Get recent provenance records from MongoDB"""
     try:
         if limit > 100:
             limit = 100
         
-        pool = get_pg_pool()
-        async with pool.acquire() as conn:
-            rows = await conn.fetch(
-                "SELECT * FROM audit_log ORDER BY created_at DESC LIMIT $1",
-                limit
-            )
-            
-            return [dict(row) for row in rows]
-            
+        db = get_mongo_db()
+        cursor = db.audit_log.find({}, {'_id': 0}).sort('created_at', -1).limit(limit)
+        rows = await cursor.to_list(length=limit)
+        
+        return rows
+        
     except Exception as e:
         logger.error(f"Failed to get recent provenance: {e}")
         raise HTTPException(status_code=500, detail=str(e))
