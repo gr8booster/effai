@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import os
 import json
+from datetime import timezone
 
 from schemas import (
     AuditLogInput,
