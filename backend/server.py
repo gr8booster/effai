@@ -14,7 +14,7 @@ load_dotenv(ROOT_DIR / '.env')
 from database import init_databases, close_databases
 
 # Import all agent routers
-from agents import orchestrator, legal, cfp, writer, intake, eefai, mentor, support, audit
+from agents import orchestrator, legal, cfp, writer, intake, eefai, mentor, support, audit, static_routes
 
 # Configure logging
 logging.basicConfig(
