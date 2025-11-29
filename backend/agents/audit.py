@@ -1,7 +1,6 @@
-"""AuditAgent - Provenance recorder and immutable log manager"""
+"""AuditAgent - Provenance recorder using MongoDB"""
 from fastapi import APIRouter, HTTPException
 import logging
-import hashlib
 import os
 import json
 from datetime import datetime, timezone
@@ -12,14 +11,14 @@ from schemas import (
     AuditVerifyInput,
     AuditVerifyOutput
 )
-from database import get_pg_pool, get_mongo_db
+from database import get_mongo_db
 from canonical_json import hmac_sign, canonical_json
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/audit", tags=["audit"])
 
-# HMAC key for signing provenance (in production, use KMS)
+# HMAC key for signing provenance
 HMAC_KEY = os.environ.get('EMERGENT_LLM_KEY', 'default-hmac-key').encode()
 
 
