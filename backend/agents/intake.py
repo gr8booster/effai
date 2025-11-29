@@ -28,10 +28,7 @@ async def upload_document(
     trace_id: str = Form(...)
 ):
     """
-    Upload and process document
-    
-    For POC: Simple text extraction and field parsing
-    Phase 2: Full OCR with Tesseract or cloud OCR
+    Upload and process document with full OCR using Tesseract
     """
     try:
         doc_id = str(uuid.uuid4())
@@ -39,12 +36,8 @@ async def upload_document(
         # Read file content
         content = await file.read()
         
-        # For POC, assume text content or simple parsing
-        try:
-            text = content.decode('utf-8')
-        except:
-            # For binary files, return placeholder
-            text = "[Binary content - OCR not implemented in POC]"
+        # Perform OCR
+        text = perform_ocr(content, file.filename)
         
         # Extract fields using regex patterns
         extracted_fields = extract_fields_from_text(text)
@@ -61,7 +54,7 @@ async def upload_document(
         # Determine if manual review needed
         needs_manual_review = any(
             conf < 0.85 for conf in confidence_scores.values()
-        )
+        ) if confidence_scores else True
         
         # Store in MongoDB
         db = get_mongo_db()
@@ -73,7 +66,8 @@ async def upload_document(
             "ocr_text": text,
             "extracted_fields": {k: v.model_dump() for k, v in extracted_fields.items()},
             "redacted_text": redacted_text,
-            "needs_manual_review": needs_manual_review
+            "needs_manual_review": needs_manual_review,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
         }
         
         await db.intake_documents.insert_one(doc_record)
@@ -88,7 +82,7 @@ async def upload_document(
             provenance_ref=f"intake_{trace_id}"
         )
         
-        logger.info(f"Document processed: doc_id={doc_id}, review_needed={needs_manual_review}")
+        logger.info(f"Document processed: doc_id={doc_id}, review_needed={needs_manual_review}, text_length={len(text)}")
         
         return result
         
