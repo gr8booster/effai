@@ -167,7 +167,7 @@ async def generate_document(input_data: WriterGenerateInput):
 
 @router.get("/template/{template_id}")
 async def get_template_metadata(template_id: str):
-    """Get template metadata"""
+    """Get template metadata from MongoDB"""
     try:
         if template_id == "debt_validation_v1":
             return {
@@ -177,18 +177,14 @@ async def get_template_metadata(template_id: str):
                 "required_fields": get_required_fields(template_id)
             }
         
-        pool = get_pg_pool()
-        async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT * FROM legal_templates WHERE template_id = $1",
-                template_id
-            )
-            
-            if not row:
-                raise HTTPException(status_code=404, detail="Template not found")
-            
-            return dict(row)
-            
+        db = get_mongo_db()
+        row = await db.legal_templates.find_one({'template_id': template_id}, {'_id': 0})
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        return row
+        
     except HTTPException:
         raise
     except Exception as e:
