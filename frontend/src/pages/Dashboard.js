@@ -74,8 +74,8 @@ const Dashboard = () => {
       await axios.post(`${API_URL}/api/mentor/tasks/${taskId}/complete`, null, {
         params: { user_id: userId }
       });
-      // Refresh tasks
-      setTasks(tasks.map(t => t.task_id === taskId ? {...t, completed: true} : t));
+      // Reload dashboard to refresh tasks and streak
+      await loadDashboardData();
     } catch (err) {
       console.error('Task completion error:', err);
     }
