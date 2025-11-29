@@ -243,7 +243,7 @@ async def test_audit_log(session):
         "db_refs": {"test": "ref"},
         "legal_db_version": "v1.0",
         "cfp_version": "v1.0",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(timezone.utc),
         "human_reviewed": False
     }
     
