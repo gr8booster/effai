@@ -31,22 +31,22 @@ async def log_provenance(input_data: AuditLogInput):
     All agent actions must log provenance before user-facing output
     """
     try:
-        # Generate HMAC signature
-        signature_data = f"{input_data.provenance_id}:{input_data.input_hash}:{input_data.output_hash}:{input_data.timestamp.isoformat()}"
-        hmac_signature = hmac.new(
-            HMAC_KEY,
-            signature_data.encode(),
-            hashlib.sha256
-        ).hexdigest()
-        
-        # Convert timestamp to UTC if needed
+        # Ensure timestamp is timezone-aware UTC
         if input_data.timestamp.tzinfo is None:
-            # Naive datetime, assume UTC
             timestamp_utc = input_data.timestamp.replace(tzinfo=timezone.utc)
         else:
-            timestamp_utc = input_data.timestamp
+            timestamp_utc = input_data.timestamp.astimezone(timezone.utc)
         
-        # Store in PostgreSQL (immutable)
+        # Generate HMAC signature using canonical JSON
+        signature_data = canonical_json({
+            "provenance_id": input_data.provenance_id,
+            "input_hash": input_data.input_hash,
+            "output_hash": input_data.output_hash,
+            "timestamp_utc": timestamp_utc.isoformat()
+        })
+        hmac_signature = hmac_sign(HMAC_KEY, signature_data)
+        
+        # Store in PostgreSQL (immutable) with TIMESTAMPTZ
         pool = get_pg_pool()
         async with pool.acquire() as conn:
             await conn.execute("""
@@ -67,7 +67,7 @@ async def log_provenance(input_data: AuditLogInput):
                 json.dumps(input_data.db_refs) if input_data.db_refs else None,
                 input_data.legal_db_version,
                 input_data.cfp_version,
-                timestamp_utc,
+                timestamp_utc,  # Now TIMESTAMPTZ compatible
                 input_data.human_reviewed,
                 hmac_signature
             )
@@ -77,7 +77,8 @@ async def log_provenance(input_data: AuditLogInput):
         await db.audit_log.insert_one({
             "provenance_id": input_data.provenance_id,
             "agent_id": input_data.agent_id,
-            "timestamp": timestamp_utc.isoformat(),
+            "timestamp_utc": timestamp_utc.isoformat(),
+            "display_ts": timestamp_utc.isoformat(),  # For UI display
             "hmac_signature": hmac_signature
         })
         
