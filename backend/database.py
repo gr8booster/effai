@@ -29,21 +29,28 @@ async def init_databases():
     mongo_db = mongo_client[os.environ['DB_NAME']]
     logger.info("MongoDB connected")
     
-    # PostgreSQL
-    pg_dsn = f"postgresql://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{os.environ['POSTGRES_DB']}"
-    pg_pool = await asyncpg.create_pool(pg_dsn, min_size=5, max_size=20)
-    logger.info("PostgreSQL pool created")
+    # PostgreSQL - Try to connect, but don't fail if unavailable
+    try:
+        pg_dsn = f"postgresql://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{os.environ['POSTGRES_DB']}"
+        pg_pool = await asyncpg.create_pool(pg_dsn, min_size=2, max_size=10, timeout=5)
+        logger.info("PostgreSQL pool created")
+        await init_pg_schema()
+    except Exception as e:
+        logger.warning(f"PostgreSQL not available: {e}. Using MongoDB fallback.")
+        pg_pool = None
     
-    # Redis
-    redis_client = await aioredis.from_url(
-        f"redis://{os.environ['REDIS_HOST']}:{os.environ['REDIS_PORT']}/{os.environ['REDIS_DB']}",
-        encoding="utf-8",
-        decode_responses=True
-    )
-    logger.info("Redis connected")
-    
-    # Create PostgreSQL tables
-    await init_pg_schema()
+    # Redis - Try to connect, but don't fail if unavailable
+    try:
+        redis_client = await aioredis.from_url(
+            f"redis://{os.environ['REDIS_HOST']}:{os.environ['REDIS_PORT']}/{os.environ['REDIS_DB']}",
+            encoding="utf-8",
+            decode_responses=True,
+            socket_connect_timeout=5
+        )
+        logger.info("Redis connected")
+    except Exception as e:
+        logger.warning(f"Redis not available: {e}. Using MongoDB fallback.")
+        redis_client = None
 
 
 async def init_pg_schema():
