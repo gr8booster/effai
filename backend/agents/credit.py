@@ -1,5 +1,5 @@
 """Credit Improvement AI - Complete credit repair module"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 import logging
 from typing import List
 from datetime import datetime, timezone
