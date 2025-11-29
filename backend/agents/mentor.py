@@ -410,6 +410,58 @@ async def generate_tasks(input_data: MentorGenerateTasksInput):
                 MentorTask(
                     task_id=str(uuid.uuid4()),
                     description="Make your first $10 deposit",
+                    time_est_min=2,
+                    resources=[],
+                    provenance_ref=f"mentor_{input_data.trace_id}"
+                )
+            ]
+            
+            lesson = MentorLesson(
+                id="emergency_fund_basics",
+                html=LESSON_TEMPLATES["emergency_fund_basics"]["html"]
+            )
+        
+        else:
+            # Generic tasks
+            tasks = [
+                MentorTask(
+                    task_id=str(uuid.uuid4()),
+                    description="Review your financial situation",
+                    time_est_min=5,
+                    resources=[],
+                    provenance_ref=f"mentor_{input_data.trace_id}"
+                )
+            ]
+            lesson = None
+        
+        # Store tasks
+        db = get_mongo_db()
+        task_docs = [{\n            \"task_id\": task.task_id,
+            \"user_id\": input_data.user_id,
+            \"plan_id\": input_data.plan_id,
+            \"milestone_id\": input_data.milestone_id,
+            \"description\": task.description,
+            \"time_est_min\": task.time_est_min,
+            \"resources\": task.resources,
+            \"status\": \"pending\",
+            \"created_at\": datetime.now(timezone.utc).isoformat()
+        } for task in tasks]
+        
+        if task_docs:
+            await db.mentor_tasks.insert_many(task_docs)
+        
+        result = MentorGenerateTasksOutput(
+            tasks=tasks,
+            lesson_of_day=lesson
+        )
+        
+        logger.info(f\"Generated {len(tasks)} tasks for milestone {input_data.milestone_id}\")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f\"Task generation failed: {e}\")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/lessons/list")
