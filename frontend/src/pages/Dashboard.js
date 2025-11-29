@@ -192,6 +192,30 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button onClick={() => navigate('/savings-planner')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center group-hover:bg-secondary-200">
+                <span className="text-2xl">💰</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Emergency Savings Planner</h3>
+                <p className="text-neutral-600 text-sm">CFP-AI generates weekly savings schedule</p>
+              </div>
+            </div>
+          </button>
+
+          <button onClick={() => navigate('/dispute-manager')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200">
+                <span className="text-2xl">⚖️</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Credit Dispute Manager</h3>
+                <p className="text-neutral-600 text-sm">FCRA-compliant dispute letters</p>
+              </div>
+            </div>
+          </button>
+
           <button onClick={() => navigate('/upload')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center group-hover:bg-primary-200">
@@ -199,22 +223,71 @@ const Dashboard = () => {
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-neutral-900 mb-1">Upload Debt Letter</h3>
-                <p className="text-neutral-600 text-sm">OCR analysis via IntakeAgent</p>
+                <p className="text-neutral-600 text-sm">AI OCR analysis via IntakeAgent</p>
               </div>
             </div>
           </button>
 
           <button onClick={() => navigate('/letters')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center group-hover:bg-secondary-200">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200">
                 <span className="text-2xl">✍️</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Generate Letter</h3>
-                <p className="text-neutral-600 text-sm">4 templates via WriterAgent</p>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Generate Letters</h3>
+                <p className="text-neutral-600 text-sm">4 templates via WriterAgent with PDF</p>
               </div>
             </div>
           </button>
+
+          <button onClick={() => navigate('/credit')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200">
+                <span className="text-2xl">📊</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Credit Improvement</h3>
+                <p className="text-neutral-600 text-sm">AI-powered score estimation & tips</p>
+              </div>
+            </div>
+          </button>
+
+          <button onClick={() => navigate('/learning')} className="bg-white rounded-lg p-6 shadow-sm border hover:border-primary-300 hover:shadow-md transition-all text-left group">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200">
+                <span className="text-2xl">📚</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Learning Center</h3>
+                <p className="text-neutral-600 text-sm">70 financial lessons by MentorAgent</p>
+              </div>
+            </div>
+          </button>
+
+          <button onClick={() => navigate('/admin')} className="bg-white rounded-lg p-6 shadow-sm border border-red-200 hover:border-red-400 hover:shadow-md transition-all text-left group">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200">
+                <span className="text-2xl">🔧</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Admin Console</h3>
+                <p className="text-neutral-600 text-sm">System stats, review queue, audit logs</p>
+              </div>
+            </div>
+          </button>
+
+          <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg p-6 border-2 border-primary-200">
+            <h3 className="font-semibold text-primary-900 mb-2">✨ New Features Added</h3>
+            <ul className="space-y-1 text-sm text-primary-800">
+              <li>• 70-lesson learning library (was 2)</li>
+              <li>• AI-powered task generation (personalized)</li>
+              <li>• Savings planner with weekly schedules</li>
+              <li>• Credit dispute workflow</li>
+              <li>• Admin analytics dashboard</li>
+              <li>• Event-driven architecture</li>
+              <li>• Performance caching (Redis)</li>
+            </ul>
+          </div>
         </div>
       </main>
     </div>
