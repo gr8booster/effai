@@ -17,7 +17,7 @@ from database import init_databases, close_databases
 from security_middleware import SecurityHeadersMiddleware, RateLimitMiddleware
 
 # Import all agent routers
-from agents import orchestrator, legal, cfp, writer, intake, eefai, mentor, support, audit, static_routes, credit
+from agents import orchestrator, legal, cfp, writer, intake, eefai, mentor, support, audit, static_routes, credit, auth
 
 # Configure logging
 logging.basicConfig(
