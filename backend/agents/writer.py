@@ -1,10 +1,14 @@
-"""WriterAgent - Deterministic template filler and document generator"""
+"""WriterAgent - Deterministic template filler and PDF generator"""
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 import logging
 import hashlib
 import json
 from jinja2 import Template
 from typing import Dict, Any
+import os
+import tempfile
+from weasyprint import HTML, CSS
 
 from schemas import (
     WriterGenerateInput,
