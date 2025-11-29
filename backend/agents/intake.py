@@ -92,11 +92,24 @@ async def upload_document(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 @router.get("/doc/{doc_id}/result")
 async def get_document_result(doc_id: str):
     """Get document processing result"""
     try:
         db = get_mongo_db()
+        doc = await db.intake_documents.find_one({"doc_id": doc_id}, {"_id": 0})
+        
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        return doc
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get document: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def perform_ocr(file_content: bytes, filename: str) -> str:
@@ -138,18 +151,6 @@ def perform_ocr(file_content: bytes, filename: str) -> str:
         except:
             return f"[Unable to extract text from {filename}]"
 
-        doc = await db.intake_documents.find_one({"doc_id": doc_id}, {"_id": 0})
-        
-        if not doc:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        return doc
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to get document: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 def extract_fields_from_text(text: str) -> dict:
