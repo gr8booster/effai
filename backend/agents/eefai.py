@@ -75,6 +75,14 @@ async def create_eefai_instance(user_id: str = None, profile: dict = None):
         
         await db.eefai_state.insert_one(instance)
         
+        # Publish event
+        from event_bus import event_bus
+        await event_bus.publish('user.registered', {
+            'user_id': user_id,
+            'profile': profile_data,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
+        
         logger.info(f"EEFai instance created for {user_id} with profile: {profile_data}")
         
         return {"message": "EEFai instance created", "user_id": user_id, "profile": profile_data}
