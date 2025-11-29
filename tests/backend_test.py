@@ -430,21 +430,22 @@ class EEFaiBackendTester:
         return success
 
     # ========== INTAKE AGENT TESTS ==========
-    def test_intake_extract(self):
-        """Test document extraction"""
+    def test_intake_upload(self):
+        """Test document upload (not extract)"""
         success, response = self.run_test(
-            "Document Extraction",
+            "Document Upload",
             "POST",
-            "api/intake/extract",
+            "api/intake/upload",
             200,
             data={
                 "document_text": "This is a debt collection letter from ABC Collections for account 123456789",
                 "document_type": "debt_letter",
+                "user_id": self.test_user_email,
                 "trace_id": f"test_intake_{datetime.now().timestamp()}"
             }
         )
         if success:
-            assert "extracted_data" in response, "Missing extracted_data"
+            assert "doc_id" in response, "Missing doc_id"
         return success
 
     # ========== RUN ALL TESTS ==========
