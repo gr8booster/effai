@@ -84,6 +84,7 @@ app.include_router(support.router, prefix="", tags=["support"])
 app.include_router(audit.router, prefix="", tags=["audit"])
 app.include_router(static_routes.router, prefix="", tags=["static"])
 app.include_router(credit.router, prefix="", tags=["credit"])
+app.include_router(auth.router, prefix="", tags=["auth"])
 
 # Include main API router
 app.include_router(api_router)
