@@ -1,58 +1,54 @@
 [
   {
-    "content": "Complete FDCPA ruleset - All 15 sections",
+    "content": "Build complete task system - Real persistence, completion tracking, streak system",
     "status": "in_progress"
   },
   {
-    "content": "Complete FCRA ruleset - All 8 sections",
+    "content": "Build complete micro-learning library - 20+ lessons with HTML content",
     "status": "pending"
   },
   {
-    "content": "Complete CROA ruleset - All sections",
+    "content": "Fix credit score visibility on dashboard AND credit page",
     "status": "pending"
   },
   {
-    "content": "Build Credit Improvement Module - Complete endpoints and UI",
+    "content": "Build login/signup UI - Skip onboarding for returning users",
     "status": "pending"
   },
   {
-    "content": "Implement Tesseract OCR - Full integration",
+    "content": "Add navigation links to all modules from dashboard",
     "status": "pending"
   },
   {
-    "content": "Build JWT Authentication System - Complete auth flow",
+    "content": "Build savings tracker with chart visualization",
     "status": "pending"
   },
   {
-    "content": "Add dashboard charts with Recharts - All visualizations",
+    "content": "Build debt payoff visualization with progress tracking",
     "status": "pending"
   },
   {
-    "content": "Implement job queue workers - Redis + background processing",
+    "content": "Complete admin console with real review functionality",
     "status": "pending"
   },
   {
-    "content": "Build savings automation features",
+    "content": "Add notifications system for task reminders",
     "status": "pending"
   },
   {
-    "content": "Add email notification system",
+    "content": "Build user profile page with settings",
     "status": "pending"
   },
   {
-    "content": "Complete admin console with full RBAC",
+    "content": "Add export functionality for letters and reports",
     "status": "pending"
   },
   {
-    "content": "Run comprehensive load testing",
+    "content": "Build analytics dashboard for admin",
     "status": "pending"
   },
   {
-    "content": "Execute security audit and fixes",
-    "status": "pending"
-  },
-  {
-    "content": "Final E2E testing all features",
+    "content": "Complete E2E testing all real features",
     "status": "pending"
   }
 ]
