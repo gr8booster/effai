@@ -24,21 +24,70 @@ LEGAL_DB_VERSION = "v1.0"
 @router.post("/check", response_model=LegalCheckOutput)
 async def check_legal(input_data: LegalCheckInput):
     """
-    Deterministic legal validation
-    
-    Checks:
-    - FDCPA compliance
-    - FCRA compliance
-    - CROA compliance
-    - State statute of limitations
-    - Proper documentation requirements
+    Legal validation with AI-powered analysis
     """
     try:
+        from ai_utils import AIProvider
+        
         flags: List[LegalFlag] = []
         citations: List[LegalCitation] = []
         must_escalate = False
         
-        # Check statute of limitations
+        # Get relevant rules from database
+        db = get_mongo_db()
+        relevant_rules = await db.legal_rules.find(
+            {"rule_type": {"$in": ["debt_collection", "credit_reporting"]}},
+            {"_id": 0}
+        ).to_list(50)
+        
+        # Use AI to analyze legal situation
+        provider = AIProvider(temperature=0.0)  # Deterministic for legal
+        
+        system_prompt = f"""You are LegalAI, a legal compliance analyzer for FDCPA/FCRA/CROA.
+        
+        Available Legal Rules:
+        {json.dumps([{"code": r['rule_code'], "text": r['rule_text']} for r in relevant_rules[:10]], indent=2)}
+        
+        Analyze the user's situation and identify any legal issues or rights.
+        Respond in JSON format:
+        {{
+          "ok": true,
+          "issues_found": ["issue description"],
+          "applicable_rules": ["FDCPA_809", "FCRA_611"],
+          "must_escalate": false,
+          "advice": "Brief legal guidance"
+        }}
+        """
+        
+        user_prompt = f"""
+        Action Type: {input_data.action_type}
+        State: {input_data.user_state.state}
+        Context: {json.dumps(input_data.context)}
+        
+        Analyze this situation for legal compliance and consumer rights.
+        """
+        
+        ai_response = await provider.generate(system_prompt, user_prompt, f"legal_{input_data.trace_id}")
+        
+        # Parse AI response and add to flags
+        import json
+        import re
+        
+        json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+        if json_match:
+            ai_data = json.loads(json_match.group())
+            
+            for issue in ai_data.get('issues_found', []):
+                flags.append(LegalFlag(
+                    code="AI_IDENTIFIED",
+                    explanation=issue,
+                    severity=Severity.MEDIUM,
+                    citation_id="AI_ANALYSIS"
+                ))
+            
+            must_escalate = ai_data.get('must_escalate', False)
+        
+        # Also run deterministic checks
         if input_data.action_type == "statute_check":
             sol_flag, sol_citation = await check_statute_of_limitations(
                 input_data.user_state.state,
@@ -50,19 +99,16 @@ async def check_legal(input_data: LegalCheckInput):
             if sol_citation:
                 citations.append(sol_citation)
         
-        # Check debt validation requirements (FDCPA)
         if input_data.action_type == "debt_validation":
             fdcpa_flags, fdcpa_citations = await check_fdcpa_compliance(input_data.context)
             flags.extend(fdcpa_flags)
             citations.extend(fdcpa_citations)
         
-        # Check credit dispute requirements (FCRA)
         if input_data.action_type == "credit_dispute":
             fcra_flags, fcra_citations = await check_fcra_compliance(input_data.context)
             flags.extend(fcra_flags)
             citations.extend(fcra_citations)
         
-        # Determine if escalation needed
         for flag in flags:
             if flag.severity == Severity.HIGH:
                 must_escalate = True
@@ -75,10 +121,10 @@ async def check_legal(input_data: LegalCheckInput):
             flags=flags,
             citations=citations,
             must_escalate=must_escalate,
-            provenance_ref=f"legal_check_{input_data.trace_id}"
+            provenance_ref=f"legal_ai_{input_data.trace_id}"
         )
         
-        logger.info(f"Legal check completed: ok={ok}, must_escalate={must_escalate}")
+        logger.info(f"AI-powered legal check: ok={ok}, escalate={must_escalate}, flags={len(flags)}")
         
         return result
         
