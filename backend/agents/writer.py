@@ -104,19 +104,20 @@ async def generate_document(input_data: WriterGenerateInput):
         if input_data.template_id == "debt_validation_v1":
             template_html = DEBT_VALIDATION_TEMPLATE
         else:
-            # Try to load from database
-            pool = get_pg_pool()
-            async with pool.acquire() as conn:
-                row = await conn.fetchrow(
-                    "SELECT template_html FROM legal_templates WHERE template_id = $1 AND template_version = $2",
-                    input_data.template_id,
-                    input_data.template_version
-                )
-                
-                if not row:
-                    raise HTTPException(status_code=404, detail="Template not found")
-                
-                template_html = row['template_html']
+            # Try to load from MongoDB
+            db = get_mongo_db()
+            row = await db.legal_templates.find_one(
+                {
+                    'template_id': input_data.template_id,
+                    'template_version': input_data.template_version
+                },
+                {'_id': 0}
+            )
+            
+            if not row:
+                raise HTTPException(status_code=404, detail="Template not found")
+            
+            template_html = row['template_html']
         
         # Validate required fields based on template
         required_fields = get_required_fields(input_data.template_id)
