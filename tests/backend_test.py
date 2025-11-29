@@ -477,8 +477,7 @@ class EEFaiBackendTester:
         
         # Legal AI tests
         self.log("\n--- LEGAL AI TESTS ---")
-        self.test_legal_validate()
-        self.test_legal_sol_lookup()
+        self.test_legal_check()
         
         # Writer Agent tests (all 4 templates)
         self.log("\n--- WRITER AGENT TESTS (4 Templates) ---")
