@@ -72,9 +72,6 @@ async def check_legal(input_data: LegalCheckInput):
         ai_response = await provider.generate(system_prompt, user_prompt, f"legal_{input_data.trace_id}")
         
         # Parse AI response and add to flags
-        import json
-        import re
-        
         json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
         if json_match:
             ai_data = json.loads(json_match.group())
