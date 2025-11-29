@@ -307,8 +307,8 @@ const Onboarding = () => {
         </div>
       </div>
           
-      {/* Buttons - Fixed at bottom */}
-      <div className="bg-white border-t border-neutral-200 px-4 py-4 sm:px-6">
+      {/* Buttons - Fixed at bottom with safe area for Emergent badge */}
+      <div className="bg-white border-t border-neutral-200 px-4 py-4 sm:px-6 pb-20">
         <div className="max-w-2xl mx-auto flex gap-3">
           {step > 1 && (
             <button
