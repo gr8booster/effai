@@ -182,10 +182,11 @@ async def get_lesson(lesson_id: str):
 
 @router.post("/tasks/{task_id}/complete")
 async def mark_task_complete(task_id: str, user_id: str):
-    """Mark task as completed"""
+    """Mark task as completed and update user streak"""
     try:
         db = get_mongo_db()
         
+        # Mark task complete
         result = await db.mentor_tasks.update_one(
             {"task_id": task_id, "user_id": user_id},
             {
@@ -199,10 +200,115 @@ async def mark_task_complete(task_id: str, user_id: str):
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Task not found")
         
-        return {"message": "Task marked complete", "task_id": task_id}
+        # Update user streak
+        await update_user_streak(user_id)
+        
+        # Get updated streak info
+        streak_info = await get_user_streak(user_id)
+        
+        return {
+            "message": "Task marked complete",
+            "task_id": task_id,
+            "streak": streak_info
+        }
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to mark task complete: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tasks/active")
+async def get_active_tasks(user_id: str):
+    """Get all active tasks for user"""
+    try:
+        db = get_mongo_db()
+        
+        tasks = await db.mentor_tasks.find(
+            {"user_id": user_id, "status": {"$ne": "completed"}},
+            {"_id": 0}
+        ).sort("created_at", 1).to_list(50)
+        
+        return {"tasks": tasks, "count": len(tasks)}
+        
+    except Exception as e:
+        logger.error(f"Failed to get tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/streak")
+async def get_streak(user_id: str):
+    """Get user's current streak"""
+    try:
+        streak_info = await get_user_streak(user_id)
+        return streak_info
+    except Exception as e:
+        logger.error(f"Failed to get streak: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def update_user_streak(user_id: str):
+    """Update user's task completion streak"""
+    db = get_mongo_db()
+    
+    # Get user state
+    user_state = await db.eefai_state.find_one({"user_id": user_id})
+    if not user_state:
+        return
+    
+    # Get completed tasks today
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    
+    completed_today = await db.mentor_tasks.count_documents({
+        "user_id": user_id,
+        "status": "completed",
+        "completed_at": {"$gte": today_start}
+    })
+    
+    # Update streak in profile
+    current_streak = user_state.get("streak", {})
+    
+    if completed_today > 0:
+        # User completed at least one task today
+        last_activity = current_streak.get("last_activity_date")
+        
+        if last_activity:
+            last_date = datetime.fromisoformat(last_activity).date()
+            today = datetime.now(timezone.utc).date()
+            
+            if (today - last_date).days == 1:
+                # Consecutive day - increment streak
+                current_count = current_streak.get("current_streak", 0) + 1
+            elif (today - last_date).days == 0:
+                # Same day - maintain streak
+                current_count = current_streak.get("current_streak", 1)
+            else:
+                # Streak broken - restart
+                current_count = 1
+        else:
+            # First day
+            current_count = 1
+        
+        new_streak = {
+            "current_streak": current_count,
+            "longest_streak": max(current_count, current_streak.get("longest_streak", 0)),
+            "total_tasks_completed": current_streak.get("total_tasks_completed", 0) + 1,
+            "last_activity_date": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.eefai_state.update_one(
+            {"user_id": user_id},
+            {"$set": {"streak": new_streak}}
+        )
+
+
+async def get_user_streak(user_id: str) -> dict:
+    """Get user's streak information"""
+    db = get_mongo_db()
+    
+    user_state = await db.eefai_state.find_one({"user_id": user_id})
+    if not user_state:
+        return {"current_streak": 0, "longest_streak": 0, "total_tasks_completed": 0}
+    
+    return user_state.get("streak", {"current_streak": 0, "longest_streak": 0, "total_tasks_completed": 0})
