@@ -104,6 +104,14 @@ async def generate_tasks(input_data: MentorGenerateTasksInput):
         
         await db.mentor_tasks.insert_many(task_docs)
         
+        # Publish event
+        from event_bus import event_bus
+        await event_bus.publish('tasks.generated', {
+            'user_id': input_data.user_id,
+            'task_count': len(tasks),
+            'milestone': input_data.milestone_id
+        })
+        
         logger.info(f"AI generated {len(tasks)} personalized tasks for {input_data.user_id}")
         
         return MentorGenerateTasksOutput(
