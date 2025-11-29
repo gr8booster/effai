@@ -141,23 +141,23 @@ const Onboarding = () => {
       
       case 2:
         return (
-          <div className="space-y-6" data-testid="onboarding-step-2">
-            <h2 className="text-3xl font-semibold text-neutral-900 font-heading">Financial Profile</h2>
-            <p className="text-neutral-600">Help us understand your financial situation.</p>
+          <div className="space-y-4" data-testid="onboarding-step-2">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 font-heading">Financial Profile</h2>
+            <p className="text-neutral-600 text-sm sm:text-base">Help us understand your financial situation.</p>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Monthly Income *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-neutral-500">$</span>
+                  <span className="absolute left-3 top-2 sm:left-4 sm:top-3 text-neutral-500">$</span>
                   <input
                     type="number"
                     name="income"
                     value={formData.income}
                     onChange={handleInputChange}
-                    className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-7 sm:pl-8 pr-3 sm:pr-4 py-2 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="3000"
                     data-testid="input-income"
                     required
@@ -166,17 +166,17 @@ const Onboarding = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Monthly Expenses *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-neutral-500">$</span>
+                  <span className="absolute left-3 top-2 sm:left-4 sm:top-3 text-neutral-500">$</span>
                   <input
                     type="number"
                     name="expenses"
                     value={formData.expenses}
                     onChange={handleInputChange}
-                    className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-7 sm:pl-8 pr-3 sm:pr-4 py-2 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="2200"
                     data-testid="input-expenses"
                     required
@@ -185,17 +185,17 @@ const Onboarding = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Current Savings
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-neutral-500">$</span>
+                  <span className="absolute left-3 top-2 sm:left-4 sm:top-3 text-neutral-500">$</span>
                   <input
                     type="number"
                     name="savings"
                     value={formData.savings}
                     onChange={handleInputChange}
-                    className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-7 sm:pl-8 pr-3 sm:pr-4 py-2 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="500"
                     data-testid="input-savings"
                   />
