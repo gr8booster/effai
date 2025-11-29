@@ -1,9 +1,14 @@
-"""IntakeAgent - OCR, parsing, and document redaction"""
+"""IntakeAgent - OCR, parsing, and document redaction with Tesseract"""
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 import logging
 import uuid
 from typing import Optional
 import re
+import pytesseract
+from PIL import Image
+import cv2
+import numpy as np
+import io
 
 from schemas import (
     IntakeUploadOutput,
