@@ -94,6 +94,76 @@ async def review_item(item_id: str, review: SupportReviewInput):
                 }
             }
         )
+
+
+@router.get("/item/{item_id}/ai-suggestion")
+async def get_ai_suggestion(item_id: str):
+    """
+    Get AI-powered suggested response for review item
+    """
+    try:
+        from ai_utils import AIProvider
+        
+        db = get_mongo_db()
+        item = await db.support_queue.find_one({"item_id": item_id}, {"_id": 0})
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+        
+        # Use AI to suggest review decision
+        provider = AIProvider(temperature=0.2)
+        
+        system_prompt = """You are SupportAgent, helping human reviewers make decisions.
+        Analyze the flagged item and suggest:
+        1. Whether to approve or reject
+        2. Any edits needed
+        3. Explanation for reviewer
+        
+        Respond in JSON:
+        {
+          "suggested_decision": "approve|reject",
+          "confidence": 0.85,
+          "reasoning": "Explanation for reviewer",
+          "suggested_edits": {"field": "new_value"}
+        }
+        """
+        
+        user_prompt = f"""
+        Item flagged by: {item['agent_id']}
+        Reason: {item['flagged_reason']}
+        Payload: {json.dumps(item['payload'])[:1000]}
+        
+        What should the reviewer do?
+        """
+        
+        ai_response = await provider.generate(system_prompt, user_prompt, f"support_suggest_{item_id}")
+        
+        # Parse response
+        import json
+        import re
+        
+        json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+        if json_match:
+            suggestion = json.loads(json_match.group())
+        else:
+            suggestion = {
+                "suggested_decision": "review",
+                "confidence": 0.5,
+                "reasoning": "AI could not analyze. Manual review required.",
+                "suggested_edits": {}
+            }
+        
+        return {
+            "item_id": item_id,
+            "ai_suggestion": suggestion,
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI suggestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         
         # If approved or edited, resume orchestration
         if review.decision in [SupportReviewDecision.APPROVE, SupportReviewDecision.EDIT]:
