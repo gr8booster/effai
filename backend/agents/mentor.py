@@ -456,12 +456,12 @@ async def generate_tasks(input_data: MentorGenerateTasksInput):
             lesson_of_day=lesson
         )
         
-        logger.info(f\"Generated {len(tasks)} tasks for milestone {input_data.milestone_id}\")
+        logger.info(f"Generated {len(tasks)} tasks for milestone {input_data.milestone_id}")
         
         return result
         
     except Exception as e:
-        logger.error(f\"Task generation failed: {e}\")
+        logger.error(f"Task generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
