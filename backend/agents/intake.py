@@ -156,9 +156,10 @@ def perform_ocr(file_content: bytes, filename: str) -> str:
 def extract_fields_from_text(text: str) -> dict:
     """
     Extract structured fields using AI + regex
-    
-    Uses OpenAI for intelligent field extraction, then validates with regex
     """
+    import re
+    import json
+    
     fields = {}
     
     # Use AI for intelligent extraction
