@@ -380,11 +380,17 @@ def get_required_fields(template_id: str) -> list:
     """Get required fields for template"""
     template_fields = {
         "debt_validation_v1": [
-            "date",
-            "recipient_name",
-            "account_number",
-            "consumer_name",
-            "consumer_address"
+            "date", "recipient_name", "account_number", "consumer_name", "consumer_address"
+        ],
+        "cease_desist_v1": [
+            "date", "recipient_name", "recipient_address", "account_number", "consumer_name", "consumer_address"
+        ],
+        "credit_dispute_v1": [
+            "date", "bureau_name", "disputed_item", "account_number", "dispute_reason", "consumer_name", "consumer_address"
+        ],
+        "settlement_offer_v1": [
+            "date", "recipient_name", "account_number", "settlement_amount", "settlement_percentage", 
+            "payment_method", "consumer_name", "consumer_address"
         ]
     }
     
