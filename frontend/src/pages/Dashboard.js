@@ -96,10 +96,14 @@ const Dashboard = () => {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-primary-600">EEFai</h1>
             <nav className="flex gap-4">
-              <button onClick={() => navigate('/upload')} className="text-neutral-600 hover:text-primary-600 text-sm">Upload</button>
-              <button onClick={() => navigate('/letters')} className="text-neutral-600 hover:text-primary-600 text-sm">Letters</button>
-              <button onClick={() => navigate('/learning')} className="text-neutral-600 hover:text-primary-600 text-sm">Learning</button>
-              <button onClick={() => navigate('/credit')} className="text-neutral-600 hover:text-primary-600 text-sm">Credit</button>
+              <button onClick={() => navigate('/dashboard')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Dashboard</button>
+              <button onClick={() => navigate('/savings-planner')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Savings</button>
+              <button onClick={() => navigate('/letters')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Letters</button>
+              <button onClick={() => navigate('/dispute-manager')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Disputes</button>
+              <button onClick={() => navigate('/credit')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Credit</button>
+              <button onClick={() => navigate('/learning')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Learning</button>
+              <button onClick={() => navigate('/upload')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Upload</button>
+              <button onClick={() => navigate('/admin')} className="text-neutral-600 hover:text-primary-600 text-sm font-medium">Admin</button>
             </nav>
           </div>
         </div>
