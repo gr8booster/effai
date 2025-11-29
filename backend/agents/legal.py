@@ -157,25 +157,29 @@ async def get_citation(citation_id: str):
 
 
 async def check_statute_of_limitations(state: str, debt_type: str, account_date: str) -> tuple:
-    """
-    Check if debt is past statute of limitations
-    
-    Returns: (flag, citation) or (None, None)
-    """
+    """Check if debt is past statute of limitations (with caching)"""
     try:
-        db = get_mongo_db()
+        # Check cache first
+        from cache_layer import get_cached_sol, cache_sol_lookup
         
-        # Query MongoDB instead of PostgreSQL
-        row = await db.statute_of_limitations.find_one({
-            'state_code': state.upper(),
-            'debt_type': debt_type.lower()
-        })
-        
-        if not row:
-            # Default to 6 years if state-specific not found
-            sol_years = 6
+        cached = await get_cached_sol(state, debt_type)
+        if cached:
+            logger.info(f"SOL lookup from cache: {state}/{debt_type}")
+            sol_years = cached['years']
         else:
-            sol_years = row['years']
+            # Query MongoDB
+            db = get_mongo_db()
+            row = await db.statute_of_limitations.find_one({
+                'state_code': state.upper(),
+                'debt_type': debt_type.lower()
+            })
+            
+            if not row:
+                sol_years = 6  # Default
+            else:
+                sol_years = row['years']
+                # Cache the result
+                await cache_sol_lookup(state, debt_type, {'years': sol_years})
         
         # Check if account is past SOL
         if account_date:
