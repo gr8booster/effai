@@ -247,27 +247,27 @@ const Onboarding = () => {
       
       case 4:
         return (
-          <div className="space-y-6" data-testid="onboarding-step-4">
-            <h2 className="text-3xl font-semibold text-neutral-900 font-heading">You're All Set!</h2>
-            <p className="text-neutral-600">EEFai will now create your personalized financial plan.</p>
+          <div className="space-y-4" data-testid="onboarding-step-4">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 font-heading">You're All Set!</h2>
+            <p className="text-neutral-600 text-sm sm:text-base">EEFai will now create your personalized financial plan.</p>
             
-            <div className="bg-primary-50 p-6 rounded-lg border border-primary-200">
-              <h3 className="font-semibold text-primary-900 mb-3">What Happens Next?</h3>
-              <ul className="space-y-2 text-sm text-primary-800">
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
+            <div className="bg-primary-50 p-4 sm:p-6 rounded-lg border border-primary-200">
+              <h3 className="font-semibold text-primary-900 mb-2 text-sm sm:text-base">What Happens Next?</h3>
+              <ul className="space-y-1.5 text-sm text-primary-800">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-600 font-bold">✓</span>
                   <span>EEFai will analyze your financial situation</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-600 font-bold">✓</span>
                   <span>You'll get a personalized emergency fund goal</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
-                  <span>Daily micro-tasks will help you build better financial habits</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-600 font-bold">✓</span>
+                  <span>Daily micro-tasks will help you build better habits</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-600 font-bold">✓</span>
                   <span>You can upload debt letters for instant analysis</span>
                 </li>
               </ul>
