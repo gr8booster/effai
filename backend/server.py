@@ -87,6 +87,10 @@ app.include_router(static_routes.router, prefix="", tags=["static"])
 # Include main API router
 app.include_router(api_router)
 
+# Add security middleware
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
