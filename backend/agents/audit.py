@@ -4,6 +4,7 @@ import logging
 import hashlib
 import hmac
 import os
+import json
 
 from schemas import (
     AuditLogInput,
