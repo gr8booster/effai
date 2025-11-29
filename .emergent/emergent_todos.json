@@ -1,15 +1,15 @@
 [
   {
     "content": "Phase 2: Fix CFP-AI checksum canonicalization bug",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Fix AuditAgent timezone bug (UTC normalization)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Create canonical JSON utility library",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Implement resumable S3 upload + OCR job queue",
@@ -25,7 +25,7 @@
   },
   {
     "content": "Phase 2: Build frontend - Onboarding flow",
-    "status": "pending"
+    "status": "in_progress"
   },
   {
     "content": "Phase 2: Build frontend - Dashboard & trackers",
