@@ -183,6 +183,7 @@ class EEFaiBackendTester:
             f"api/eefai/{self.test_user_email}/message",
             200,
             data={
+                "user_id": self.test_user_email,
                 "message": "I need help with a debt collection letter",
                 "trace_id": f"test_{datetime.now().timestamp()}"
             }
