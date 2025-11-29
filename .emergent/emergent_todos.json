@@ -4,7 +4,7 @@
     "status": "completed"
   },
   {
-    "content": "PRIORITY 2: Add PDF generation (Puppeteer integration)",
+    "content": "PRIORITY 2: Add PDF generation (ReportLab)",
     "status": "completed"
   },
   {
@@ -13,54 +13,14 @@
   },
   {
     "content": "PRIORITY 4: Add 3 more letter templates (cease/desist, credit dispute, settlement)",
-    "status": "in_progress"
-  },
-  {
-    "content": "PRIORITY 5: Security hardening (rate limiting, headers, JWT, SAST scan)",
-    "status": "pending"
-  },
-  {
-    "content": "Add Redis caching layer for CFP, Writer, Legal lookups",
-    "status": "pending"
-  },
-  {
-    "content": "Implement job queue with workers for async operations",
-    "status": "pending"
-  },
-  {
-    "content": "Add remaining 39 states to SOL table",
     "status": "completed"
   },
   {
-    "content": "Complete FDCPA ruleset (12 missing sections)",
-    "status": "pending"
+    "content": "PRIORITY 5: Security hardening (rate limiting, headers, JWT, SAST scan)",
+    "status": "in_progress"
   },
   {
-    "content": "Complete FCRA ruleset (6 missing sections)",
-    "status": "pending"
-  },
-  {
-    "content": "Add CROA compliance rules",
-    "status": "pending"
-  },
-  {
-    "content": "Normalize all agent JSON to snake_case",
-    "status": "pending"
-  },
-  {
-    "content": "Add unified response wrapper for all endpoints",
-    "status": "pending"
-  },
-  {
-    "content": "Build Credit Improvement module",
-    "status": "pending"
-  },
-  {
-    "content": "Run load testing (k6 scenarios)",
-    "status": "pending"
-  },
-  {
-    "content": "Final E2E testing with screenshots",
+    "content": "Final E2E testing with screenshots proving all fixes",
     "status": "pending"
   }
 ]
