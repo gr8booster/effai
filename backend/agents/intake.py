@@ -148,7 +148,7 @@ def perform_ocr(file_content: bytes, filename: str) -> str:
         try:
             text = file_content.decode('utf-8')
             return text
-        except:
+        except Exception:
             return f"[Unable to extract text from {filename}]"
 
 
