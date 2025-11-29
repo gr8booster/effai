@@ -26,73 +26,150 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/writer", tags=["writer"])
 
-# Template templates (for POC)
+# Template templates (for immediate use)
 DEBT_VALIDATION_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
     <title>Debt Validation Request</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-        .header { text-align: right; margin-bottom: 40px; }
-        .content { margin: 20px 0; }
-        .signature { margin-top: 60px; }
-    </style>
 </head>
-<body>
-    <div class="header">
-        <p>{{ consumer_name }}<br>
-        {{ consumer_address }}<br>
-        {{ date }}</p>
+<body style="font-family: Arial, sans-serif; margin: 40px; line-height: 1.6;">
+    <div style="text-align: right; margin-bottom: 40px;">
+        <p>{{ consumer_name }}<br>{{ consumer_address }}<br>{{ date }}</p>
     </div>
-    
-    <p>{{ recipient_name }}<br>
-    Attn: Validation Department</p>
-    
+    <p>{{ recipient_name }}<br>Attn: Validation Department</p>
     <p>Re: Account Number {{ account_number }}</p>
-    
-    <div class="content">
+    <div style="margin: 20px 0;">
         {% if tone == 'formal' %}
         <p>Dear Sir or Madam,</p>
-        
-        <p>I am writing to formally request validation of the alleged debt you claim I owe, 
-        pursuant to my rights under the Fair Debt Collection Practices Act (FDCPA), 
-        15 U.S.C. § 1692g.</p>
-        
-        <p>Please provide the following documentation:</p>
-        <ul>
-            <li>The original creditor's name and account number</li>
-            <li>The original amount of the debt</li>
-            <li>Proof that you are licensed to collect debts in my state</li>
-            <li>Verification that the statute of limitations has not expired</li>
-            <li>A complete account statement from the original creditor</li>
-        </ul>
-        
-        <p>Until you provide proper validation, I expect all collection activities to cease 
-        as required by law.</p>
+        <p>I am writing to formally request validation of the alleged debt pursuant to 15 U.S.C. § 1692g.</p>
         {% else %}
         <p>Hello,</p>
-        
-        <p>I'm writing to ask you to validate the debt you say I owe. Under the Fair Debt 
-        Collection Practices Act, I have the right to ask for proof.</p>
-        
-        <p>Please send me:</p>
-        <ul>
-            <li>Who the original creditor was</li>
-            <li>The original amount I owed</li>
-            <li>Proof you can collect this debt</li>
-            <li>Confirmation this debt isn't too old to collect</li>
-            <li>A full statement from the original creditor</li>
-        </ul>
-        
-        <p>Please don't contact me about this debt until you send this information.</p>
+        <p>I'm writing to ask for validation of this debt under the Fair Debt Collection Practices Act.</p>
         {% endif %}
     </div>
-    
-    <div class="signature">
-        <p>Sincerely,<br><br>
-        {{ consumer_name }}</p>
+    <div style="margin-top: 60px;">
+        <p>Sincerely,<br><br>{{ consumer_name }}</p>
     </div>
-    
+    <div style="margin-top: 40px; font-size: 8px; color: #ccc;">
+        <!-- Provenance: {{ provenance_json }} -->
+    </div>
+</body>
+</html>
+"""
+
+CEASE_DESIST_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Cease and Desist</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px; line-height: 1.6;">
+    <div style="text-align: right; margin-bottom: 40px;">
+        <p>{{ consumer_name }}<br>{{ consumer_address }}<br>{{ date }}</p>
+    </div>
+    <p>{{ recipient_name }}<br>{{ recipient_address }}</p>
+    <p><strong>RE: Cease and Desist - Account {{ account_number }}</strong></p>
+    <div style="margin: 20px 0;">
+        <p>Dear Sir or Madam:</p>
+        <p>This letter is to formally notify you that I am invoking my rights under 15 U.S.C. § 1692c(c) 
+        of the Fair Debt Collection Practices Act.</p>
+        <p>You are hereby directed to <strong>CEASE AND DESIST</strong> all communication with me regarding 
+        the alleged debt referenced above.</p>
+        <p>This includes, but is not limited to:</p>
+        <ul>
+            <li>Telephone calls to my home, cell, or workplace</li>
+            <li>Letters or written correspondence</li>
+            <li>Contact through third parties</li>
+            <li>Any other form of communication</li>
+        </ul>
+        <p>You may only contact me to:</p>
+        <ul>
+            <li>Confirm receipt of this letter</li>
+            <li>Notify me that collection efforts are being terminated</li>
+            <li>Notify me of specific legal action you intend to take</li>
+        </ul>
+        <p>Please consider this my formal written notice under the FDCPA.</p>
+    </div>
+    <div style="margin-top: 60px;">
+        <p>Sincerely,<br><br>{{ consumer_name }}</p>
+    </div>
+    <div style="margin-top: 40px; font-size: 8px; color: #ccc;">
+        <!-- Provenance: {{ provenance_json }} -->
+    </div>
+</body>
+</html>
+"""
+
+CREDIT_DISPUTE_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Credit Report Dispute</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px; line-height: 1.6;">
+    <div style="text-align: right; margin-bottom: 40px;">
+        <p>{{ consumer_name }}<br>{{ consumer_address }}<br>{{ date }}</p>
+    </div>
+    <p>{{ bureau_name }}<br>Dispute Department</p>
+    <p><strong>RE: Formal Dispute of Inaccurate Information</strong></p>
+    <div style="margin: 20px 0;">
+        <p>To Whom It May Concern:</p>
+        <p>I am writing to dispute the following inaccurate information on my credit report, 
+        pursuant to my rights under 15 U.S.C. § 1681i (FCRA Section 611).</p>
+        <p><strong>Item Being Disputed:</strong> {{ disputed_item }}</p>
+        <p><strong>Account Number:</strong> {{ account_number }}</p>
+        <p><strong>Reason for Dispute:</strong> {{ dispute_reason }}</p>
+        <p>Under the Fair Credit Reporting Act, you are required to investigate this dispute within 30 days 
+        and must correct or delete any information found to be inaccurate, incomplete, or unverifiable.</p>
+        <p>I request that you:</p>
+        <ol>
+            <li>Investigate this disputed item thoroughly</li>
+            <li>Contact the furnisher of this information</li>
+            <li>Remove this item if it cannot be verified as 100% accurate</li>
+            <li>Send me written confirmation of the results</li>
+        </ol>
+        <p>Enclosed are supporting documents that verify my position.</p>
+    </div>
+    <div style="margin-top: 60px;">
+        <p>Sincerely,<br><br>{{ consumer_name }}</p>
+    </div>
+    <div style="margin-top: 40px; font-size: 8px; color: #ccc;">
+        <!-- Provenance: {{ provenance_json }} -->
+    </div>
+</body>
+</html>
+"""
+
+SETTLEMENT_OFFER_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Debt Settlement Offer</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px; line-height: 1.6;">
+    <div style="text-align: right; margin-bottom: 40px;">
+        <p>{{ consumer_name }}<br>{{ consumer_address }}<br>{{ date }}</p>
+    </div>
+    <p>{{ recipient_name }}<br>Settlement Department</p>
+    <p><strong>RE: Settlement Offer - Account {{ account_number }}</strong></p>
+    <div style="margin: 20px 0;">
+        <p>Dear Sir or Madam:</p>
+        <p>I am writing regarding the above-referenced account. Due to financial hardship, I am unable to pay 
+        the full amount currently claimed.</p>
+        <p>However, I am willing to resolve this matter and hereby offer to settle this account for 
+        <strong>${{ settlement_amount }}</strong>, which represents {{ settlement_percentage }}% of the alleged balance.</p>
+        <p><strong>Settlement Terms:</strong></p>
+        <ul>
+            <li>Payment amount: ${{ settlement_amount }}</li>
+            <li>Payment method: {{ payment_method }}</li>
+            <li>In exchange, you agree to mark this account as "Paid in Full" or "Settled"</li>
+            <li>You agree to request deletion of all negative tradelines related to this account from all credit bureaus</li>
+            <li>You agree this settles the account completely with no further amounts owed</li>
+        </ul>
+        <p>This offer is contingent upon receiving written confirmation of these terms <strong>before</strong> I submit payment.</p>
+        <p>If you accept this offer, please send written confirmation on company letterhead within 15 days.</p>
+        <p>This is an offer of settlement and should not be construed as acknowledgment of the debt or waiver of any rights.</p>
+    </div>
+    <div style="margin-top: 60px;">
+        <p>Sincerely,<br><br>{{ consumer_name }}</p>
+    </div>
     <div style="margin-top: 40px; font-size: 8px; color: #ccc;">
         <!-- Provenance: {{ provenance_json }} -->
     </div>
