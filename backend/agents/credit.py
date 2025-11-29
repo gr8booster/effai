@@ -14,21 +14,14 @@ router = APIRouter(prefix="/api/credit", tags=["credit"])
 
 
 @router.post("/analyze")
-async def analyze_credit_report(data: dict):
+async def analyze_credit_report(user_id: str, report_data: dict):
     """
-    Analyze credit report and identify improvement opportunities
+    Analyze credit report  
     
-    Accepts JSON body with:
-    - user_id: string
-    - report_data: dict with accounts, current_score, etc.
+    Query params: user_id
+    Body: report_data with current_score, accounts array
     """
     try:
-        user_id = data.get("user_id")
-        report_data = data.get("report_data", {})
-        
-        if not user_id:
-            raise HTTPException(status_code=400, detail="user_id required")
-        
         db = get_mongo_db()
         
         # Get user state
