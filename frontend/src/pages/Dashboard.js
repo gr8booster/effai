@@ -137,6 +137,9 @@ const Dashboard = () => {
               <button onClick={() => navigate('/learning')} className="text-neutral-600 hover:text-primary-600 text-sm" data-testid="nav-learning">
                 Learning
               </button>
+              <button onClick={() => navigate('/credit')} className="text-neutral-600 hover:text-primary-600 text-sm" data-testid="nav-credit">
+                Credit
+              </button>
             </nav>
           </div>
         </div>
