@@ -158,7 +158,7 @@ async def generate_document(input_data: WriterGenerateInput):
         # Generate hash
         content_hash = hashlib.sha256(rendered_html.encode()).hexdigest()
         
-        # Generate PDF using WeasyPrint
+        # Generate PDF using ReportLab
         pdf_path = None
         try:
             # Create temp file for PDF
@@ -166,8 +166,43 @@ async def generate_document(input_data: WriterGenerateInput):
             pdf_path = temp_pdf.name
             temp_pdf.close()
             
-            # Generate PDF from HTML
-            HTML(string=rendered_html).write_pdf(pdf_path)
+            # Generate PDF from template data
+            doc = SimpleDocTemplate(pdf_path, pagesize=letter)
+            story = []
+            styles = getSampleStyleSheet()
+            
+            # Add content
+            story.append(Paragraph(f"{sanitized_fields['consumer_name']}", styles['Normal']))
+            story.append(Paragraph(f"{sanitized_fields['consumer_address']}", styles['Normal']))
+            story.append(Paragraph(f"{sanitized_fields['date']}", styles['Normal']))
+            story.append(Spacer(1, 0.5*inch))
+            
+            story.append(Paragraph(f"{sanitized_fields['recipient_name']}", styles['Normal']))
+            story.append(Paragraph(f"Re: Account Number {sanitized_fields['account_number']}", styles['Normal']))
+            story.append(Spacer(1, 0.3*inch))
+            
+            # Body
+            if sanitized_fields['tone'] == 'formal':
+                body_text = f"""Dear Sir or Madam,<br/><br/>
+                I am writing to formally request validation of the alleged debt you claim I owe, 
+                pursuant to my rights under the Fair Debt Collection Practices Act (FDCPA), 15 U.S.C. § 1692g.<br/><br/>
+                Please provide: the original creditor's name, the original amount, proof of licensing, 
+                verification that statute of limitations has not expired, and a complete account statement.<br/><br/>
+                Until you provide proper validation, I expect all collection activities to cease as required by law.<br/><br/>
+                Sincerely,<br/>{sanitized_fields['consumer_name']}"""
+            else:
+                body_text = f"""Hello,<br/><br/>
+                I'm writing to ask you to validate the debt you say I owe. Under the Fair Debt Collection Practices Act, 
+                I have the right to ask for proof.<br/><br/>
+                Please send me: who the original creditor was, the original amount, proof you can collect this debt, 
+                confirmation this debt isn't too old, and a full statement.<br/><br/>
+                Please don't contact me until you send this information.<br/><br/>
+                Sincerely,<br/>{sanitized_fields['consumer_name']}"""
+            
+            story.append(Paragraph(body_text, styles['Normal']))
+            
+            # Build PDF
+            doc.build(story)
             
             logger.info(f"PDF generated at {pdf_path}")
             
