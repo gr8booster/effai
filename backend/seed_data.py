@@ -100,7 +100,7 @@ async def seed_legal_rules():
                 VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7)
                 ON CONFLICT (rule_code) DO NOTHING
             """, rule['rule_code'], rule['rule_type'], rule['state_code'], rule['rule_text'],
-                rule['citations'], rule['severity'], rule['db_version'])
+                json.dumps(rule['citations']), rule['severity'], rule['db_version'])
             print(f"Inserted legal rule: {rule['rule_code']}")
         except Exception as e:
             print(f"Error inserting rule {rule['rule_code']}: {e}")
