@@ -410,6 +410,27 @@ async def generate_tasks(input_data: MentorGenerateTasksInput):
                 MentorTask(
                     task_id=str(uuid.uuid4()),
                     description="Make your first $10 deposit",
+
+
+@router.get("/lessons/list")
+async def get_all_lessons():
+    """Get list of all available lessons"""
+    try:
+        lessons = []
+        for lesson_id, lesson_data in LESSON_TEMPLATES.items():
+            lessons.append({
+                "id": lesson_id,
+                "title": lesson_data["title"],
+                "category": lesson_data.get("category", "general"),
+                "duration_min": lesson_data.get("duration_min", 5)
+            })
+        
+        return {"lessons": lessons, "total": len(lessons)}
+        
+    except Exception as e:
+        logger.error(f"Failed to get lessons: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
                     time_est_min=2,
                     resources=[],
                     provenance_ref=f"mentor_{input_data.trace_id}"
