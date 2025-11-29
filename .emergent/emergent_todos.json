@@ -1,26 +1,58 @@
 [
   {
-    "content": "PRIORITY 1: Connect Dashboard to live backend data (all widgets)",
-    "status": "completed"
-  },
-  {
-    "content": "PRIORITY 2: Add PDF generation (ReportLab)",
-    "status": "completed"
-  },
-  {
-    "content": "PRIORITY 3: Migrate PostgreSQL/Redis to MongoDB collections (stability)",
-    "status": "completed"
-  },
-  {
-    "content": "PRIORITY 4: Add 3 more letter templates (cease/desist, credit dispute, settlement)",
-    "status": "completed"
-  },
-  {
-    "content": "PRIORITY 5: Security hardening (rate limiting, headers, JWT, SAST scan)",
+    "content": "Complete FDCPA ruleset - All 15 sections",
     "status": "in_progress"
   },
   {
-    "content": "Final E2E testing with screenshots proving all fixes",
+    "content": "Complete FCRA ruleset - All 8 sections",
+    "status": "pending"
+  },
+  {
+    "content": "Complete CROA ruleset - All sections",
+    "status": "pending"
+  },
+  {
+    "content": "Build Credit Improvement Module - Complete endpoints and UI",
+    "status": "pending"
+  },
+  {
+    "content": "Implement Tesseract OCR - Full integration",
+    "status": "pending"
+  },
+  {
+    "content": "Build JWT Authentication System - Complete auth flow",
+    "status": "pending"
+  },
+  {
+    "content": "Add dashboard charts with Recharts - All visualizations",
+    "status": "pending"
+  },
+  {
+    "content": "Implement job queue workers - Redis + background processing",
+    "status": "pending"
+  },
+  {
+    "content": "Build savings automation features",
+    "status": "pending"
+  },
+  {
+    "content": "Add email notification system",
+    "status": "pending"
+  },
+  {
+    "content": "Complete admin console with full RBAC",
+    "status": "pending"
+  },
+  {
+    "content": "Run comprehensive load testing",
+    "status": "pending"
+  },
+  {
+    "content": "Execute security audit and fixes",
+    "status": "pending"
+  },
+  {
+    "content": "Final E2E testing all features",
     "status": "pending"
   }
 ]
