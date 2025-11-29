@@ -140,7 +140,7 @@ const Onboarding = () => {
         income: parseFloat(formData.income) || 0,
         expenses: parseFloat(formData.expenses) || 0,
         savings: parseFloat(formData.savings) || 0,
-        monthlyS urplus: planResponse.data.calculations.monthly_surplus,
+        monthlySurplus: planResponse.data.calculations.monthly_surplus,
         onboarded: true,
         onboarded_at: new Date().toISOString()
       }));
