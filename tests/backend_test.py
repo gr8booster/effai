@@ -222,36 +222,26 @@ class EEFaiBackendTester:
         return success
 
     # ========== LEGAL AI TESTS ==========
-    def test_legal_validate(self):
-        """Test Legal AI validation"""
+    def test_legal_check(self):
+        """Test Legal AI check (not validate)"""
         success, response = self.run_test(
-            "Legal AI Validation",
+            "Legal AI Check",
             "POST",
-            "api/legal/validate",
+            "api/legal/check",
             200,
             data={
-                "document_type": "debt_validation",
-                "content": "This is a test debt validation letter",
-                "state": "CA",
+                "action_type": "statute_check",
+                "user_state": {"state": "CA"},
+                "context": {
+                    "debt_type": "credit_card",
+                    "account_date": "2018-01-01"
+                },
                 "trace_id": f"test_legal_{datetime.now().timestamp()}"
             }
         )
         if success:
-            assert "is_valid" in response, "Missing is_valid field"
-            assert "violations" in response, "Missing violations field"
-        return success
-
-    def test_legal_sol_lookup(self):
-        """Test Statute of Limitations lookup"""
-        success, response = self.run_test(
-            "SOL Lookup",
-            "GET",
-            "api/legal/sol/CA",
-            200
-        )
-        if success:
-            assert "state" in response, "Missing state field"
-            assert "debt_types" in response, "Missing debt_types"
+            assert "flags" in response, "Missing flags field"
+            assert "citations" in response, "Missing citations field"
         return success
 
     # ========== WRITER AGENT TESTS ==========
