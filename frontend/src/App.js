@@ -9,6 +9,8 @@ import MicroLearning from './pages/MicroLearning';
 import AdminConsole from './pages/AdminConsole';
 import CreditImprovement from './pages/CreditImprovement';
 import Login from './pages/Login';
+import SavingsPlanner from './pages/SavingsPlanner';
+import DisputeManager from './pages/DisputeManager';
 import './App.css';
 
 function App() {
