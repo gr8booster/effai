@@ -1,66 +1,66 @@
 [
   {
-    "content": "Phase 2: Fix CFP-AI checksum canonicalization bug",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: Fix AuditAgent timezone bug (UTC normalization)",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: Create canonical JSON utility library",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: Implement resumable S3 upload + OCR job queue",
-    "status": "pending"
-  },
-  {
-    "content": "Phase 2: Complete LegalAI deterministic rules engine",
-    "status": "pending"
-  },
-  {
-    "content": "Phase 2: Implement WriterAgent provenance signing",
-    "status": "pending"
-  },
-  {
-    "content": "Phase 2: Build frontend - Onboarding flow",
+    "content": "PRIORITY 1: Connect Dashboard to live backend data (all widgets)",
     "status": "in_progress"
   },
   {
-    "content": "Phase 2: Build frontend - Dashboard & trackers",
+    "content": "PRIORITY 2: Add PDF generation (Puppeteer integration)",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Build frontend - Document upload UI",
+    "content": "PRIORITY 3: Migrate PostgreSQL/Redis to MongoDB collections (stability)",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Build frontend - Letter builder & preview",
+    "content": "PRIORITY 4: Add 3 more letter templates (cease/desist, credit dispute, settlement)",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Build frontend - Micro-learning dashboard",
+    "content": "PRIORITY 5: Security hardening (rate limiting, headers, JWT, SAST scan)",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Build frontend - Admin/Reviewer console",
+    "content": "Add Redis caching layer for CFP, Writer, Legal lookups",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Implement human review flow & RBAC",
+    "content": "Implement job queue with workers for async operations",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Complete audit chain verification",
+    "content": "Add remaining 39 states to SOL table",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Run full E2E test suite and verify all pass",
+    "content": "Complete FDCPA ruleset (12 missing sections)",
     "status": "pending"
   },
   {
-    "content": "Phase 2: Create deployment documentation & runbooks",
+    "content": "Complete FCRA ruleset (6 missing sections)",
+    "status": "pending"
+  },
+  {
+    "content": "Add CROA compliance rules",
+    "status": "pending"
+  },
+  {
+    "content": "Normalize all agent JSON to snake_case",
+    "status": "pending"
+  },
+  {
+    "content": "Add unified response wrapper for all endpoints",
+    "status": "pending"
+  },
+  {
+    "content": "Build Credit Improvement module",
+    "status": "pending"
+  },
+  {
+    "content": "Run load testing (k6 scenarios)",
+    "status": "pending"
+  },
+  {
+    "content": "Final E2E testing with screenshots",
     "status": "pending"
   }
 ]
