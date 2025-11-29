@@ -198,7 +198,7 @@ def extract_fields_from_text(text: str) -> dict:
                 value={"value": amount, "currency": "USD"},
                 confidence=0.92
             )
-        except:
+        except (ValueError, TypeError):
             pass
     
     # Extract date
