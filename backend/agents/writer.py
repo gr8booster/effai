@@ -328,14 +328,37 @@ async def generate_document(input_data: WriterGenerateInput):
 async def get_template_metadata(template_id: str):
     """Get template metadata from MongoDB"""
     try:
-        if template_id == "debt_validation_v1":
-            return {
+        template_info = {
+            "debt_validation_v1": {
                 "template_id": "debt_validation_v1",
                 "template_version": "1.0.0",
                 "template_type": "debt_validation",
-                "required_fields": get_required_fields(template_id)
+                "required_fields": get_required_fields("debt_validation_v1")
+            },
+            "cease_desist_v1": {
+                "template_id": "cease_desist_v1",
+                "template_version": "1.0.0",
+                "template_type": "cease_desist",
+                "required_fields": get_required_fields("cease_desist_v1")
+            },
+            "credit_dispute_v1": {
+                "template_id": "credit_dispute_v1",
+                "template_version": "1.0.0",
+                "template_type": "credit_dispute",
+                "required_fields": get_required_fields("credit_dispute_v1")
+            },
+            "settlement_offer_v1": {
+                "template_id": "settlement_offer_v1",
+                "template_version": "1.0.0",
+                "template_type": "settlement_offer",
+                "required_fields": get_required_fields("settlement_offer_v1")
             }
+        }
         
+        if template_id in template_info:
+            return template_info[template_id]
+        
+        # Try MongoDB
         db = get_mongo_db()
         row = await db.legal_templates.find_one({'template_id': template_id}, {'_id': 0})
         
