@@ -1,19 +1,19 @@
 [
   {
     "content": "PRIORITY 1: Connect Dashboard to live backend data (all widgets)",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "PRIORITY 2: Add PDF generation (Puppeteer integration)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "PRIORITY 3: Migrate PostgreSQL/Redis to MongoDB collections (stability)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "PRIORITY 4: Add 3 more letter templates (cease/desist, credit dispute, settlement)",
-    "status": "pending"
+    "status": "in_progress"
   },
   {
     "content": "PRIORITY 5: Security hardening (rate limiting, headers, JWT, SAST scan)",
@@ -29,7 +29,7 @@
   },
   {
     "content": "Add remaining 39 states to SOL table",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Complete FDCPA ruleset (12 missing sections)",
