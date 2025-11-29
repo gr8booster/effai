@@ -18,43 +18,69 @@ router = APIRouter(prefix="/api/eefai", tags=["eefai"])
 
 
 @router.post("/create")
-async def create_eefai_instance(user_id: str):
+async def create_eefai_instance(user_id: str = None, profile: dict = None):
     """
-    Create persistent EEFai instance for user
+    Create persistent EEFai instance for user with optional profile data
+    
+    Accepts either query param user_id OR JSON body with user_id and profile
     """
     try:
+        from fastapi import Body
+        
+        # Handle both old and new API formats
+        if user_id is None:
+            # New format: JSON body
+            request_data = profile or {}
+            user_id = request_data.get('user_id')
+            profile_data = request_data.get('profile', {})
+        else:
+            # Old format: query param
+            profile_data = profile or {}
+        
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id required")
+        
         db = get_mongo_db()
         
         # Check if instance already exists
         existing = await db.eefai_state.find_one({"user_id": user_id})
         if existing:
+            # Update profile if new data provided
+            if profile_data:
+                await db.eefai_state.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"profile": profile_data}}
+                )
+                return {"message": "EEFai instance updated", "user_id": user_id}
             return {"message": "EEFai instance already exists", "user_id": user_id}
         
-        # Create new instance
+        # Create new instance with profile
         instance = {
             "user_id": user_id,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "conversation_history": [],
             "current_plan_id": None,
-            "stage": "stabilize",  # stabilize, defend, grow
-            "profile": {
+            "stage": "stabilize",
+            "profile": profile_data or {
                 "income": 0,
                 "expenses": 0,
                 "debts": [],
                 "goals": []
             },
             "context_refs": {
-                "short_term_memory": [],  # Last 30 turns
-                "long_term_memory": []     # Plan history
+                "short_term_memory": [],
+                "long_term_memory": []
             }
         }
         
         await db.eefai_state.insert_one(instance)
         
-        logger.info(f"EEFai instance created for user {user_id}")
+        logger.info(f"EEFai instance created for {user_id} with profile: {profile_data}")
         
-        return {"message": "EEFai instance created", "user_id": user_id}
+        return {"message": "EEFai instance created", "user_id": user_id, "profile": profile_data}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create EEFai instance: {e}")
         raise HTTPException(status_code=500, detail=str(e))
