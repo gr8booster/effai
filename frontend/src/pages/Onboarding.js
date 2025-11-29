@@ -284,54 +284,63 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-neutral-500">Step {step} of 4</span>
-              <span className="text-sm font-medium text-primary-600">{Math.round((step / 4) * 100)}% Complete</span>
-            </div>
-            <div className="w-full h-2 bg-neutral-200 rounded-full">
-              <div 
-                className="h-2 bg-primary-600 rounded-full transition-all duration-300"
-                style={{ width: `${(step / 4) * 100}%` }}
-              />
-            </div>
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white border-b border-neutral-200 px-4 py-4 sm:px-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-neutral-500">Step {step} of 4</span>
+            <span className="text-sm font-medium text-primary-600">{Math.round((step / 4) * 100)}% Complete</span>
           </div>
-          
-          {renderStep()}
-          
-          <div className="mt-8 flex gap-4">
-            {step > 1 && (
-              <button
-                onClick={handleBack}
-                className="flex-1 px-6 py-3 border-2 border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
-                data-testid="button-back"
-              >
-                Back
-              </button>
-            )}
-            
-            {step < 4 ? (
-              <button
-                onClick={handleNext}
-                className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                data-testid="button-next"
-              >
-                Continue
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
-                data-testid="button-submit"
-              >
-                {loading ? 'Setting up...' : 'Get Started'}
-              </button>
-            )}
+          <div className="w-full h-2 bg-neutral-200 rounded-full">
+            <div 
+              className="h-2 bg-primary-600 rounded-full transition-all duration-300"
+              style={{ width: `${(step / 4) * 100}%` }}
+            />
           </div>
+        </div>
+      </div>
+
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8">
+            {renderStep()}
+          </div>
+        </div>
+      </div>
+          
+      {/* Buttons - Fixed at bottom */}
+      <div className="bg-white border-t border-neutral-200 px-4 py-4 sm:px-6">
+        <div className="max-w-2xl mx-auto flex gap-3">
+          {step > 1 && (
+            <button
+              onClick={handleBack}
+              className="flex-1 px-6 py-3 border-2 border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors font-medium"
+              data-testid="button-back"
+            >
+              Back
+            </button>
+          )}
+          
+          {step < 4 ? (
+            <button
+              onClick={handleNext}
+              className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm"
+              data-testid="button-next"
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm disabled:opacity-50"
+              data-testid="button-submit"
+            >
+              {loading ? 'Setting up...' : 'Get Started'}
+            </button>
+          )}
         </div>
       </div>
     </div>
