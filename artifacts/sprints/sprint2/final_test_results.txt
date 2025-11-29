@@ -1,0 +1,65 @@
+
+======================================================================
+  EEFai Core Orchestration Pipeline Test Suite
+  Testing all 9 agents + validation gates
+======================================================================
+
+[94mℹ Test 0: API Health Check[0m
+[92m✓ API is running - Version: 1.0.0[0m
+[94mℹ Available agents: OrchestratorAI, EEFai, IntakeAgent, LegalAI, CFP-AI, WriterAgent, MentorAgent, SupportAgent, AuditAgent[0m
+
+[94mℹ Test 1: Legal AI Validation Gate[0m
+[92m✓ Legal check passed - ok=True, must_escalate=False[0m
+[94mℹ Found 0 flags and 0 citations[0m
+
+[94mℹ Test 2: CFP-AI Deterministic Math[0m
+[92m✓ CFP simulation passed - ok=True[0m
+[94mℹ Monthly surplus: $800.0[0m
+[94mℹ Savings plan entries: 13[0m
+[94mℹ Checksum: c066b0e8048ac1a5...[0m
+[92m✓ ✓ Determinism verified: Same input → Same checksum[0m
+
+[94mℹ Test 3: CFP-AI Checksum Verification[0m
+[93m⚠ Verification failed: Checksum mismatch - calculations may have been tampered with[0m
+
+[94mℹ Test 4: Writer Agent Document Generation[0m
+[92m✓ Document generated - hash: c610d8759d4b6b9b...[0m
+[94mℹ HTML preview length: 1836 chars[0m
+[92m✓ ✓ Determinism verified: Same fields → Same hash[0m
+
+[94mℹ Test 5: Audit Agent Provenance Logging[0m
+[92m✓ Provenance logged - ID: prov_test_1764391119.175814[0m
+[94mℹ HMAC signature: 91b37becc1a7f3fe...[0m
+
+[94mℹ Test 6: Audit Provenance Verification[0m
+[92m✓ Provenance verified: Output verified - hash matches provenance record[0m
+
+[94mℹ Test 7: EEFai Instance Creation[0m
+[92m✓ EEFai instance created: EEFai instance already exists[0m
+
+[94mℹ Test 8: EEFai Message Routing[0m
+[92m✓ EEFai responded - response_id: 8fe85d1c-267a-4c6a-8a1c-13301fbff52d[0m
+[94mℹ Actions: 1[0m
+[94mℹ First action: task[0m
+
+[94mℹ Test 9: Mentor Agent Task Generation[0m
+[92m✓ Tasks generated: 3 tasks[0m
+[94mℹ First task: Set up a separate savings account or jar for emerg...[0m
+[94mℹ Lesson included: emergency_fund_basics[0m
+
+[94mℹ Test 10: Orchestrator Pipeline Execution[0m
+[92m✓ Orchestration completed - status: completed[0m
+[94mℹ Steps executed: 2[0m
+[94mℹ   - IntakeAgent: ok[0m
+[94mℹ   - EEFai: ok[0m
+
+======================================================================
+  Test Results
+======================================================================
+Total Tests: 11
+[92mPassed: 10[0m
+[91mFailed: 1[0m
+Success Rate: 90.9%
+======================================================================
+
+[92m✓ Test results saved to /app/tests/sprint1_test_results.json[0m
