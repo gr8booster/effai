@@ -144,6 +144,9 @@ const Dashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Legal Disclaimer */}
+        <Disclaimer page="general" />
+        
         {/* Welcome */}
         <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-6 mb-6 border border-primary-200">
           <h2 className="text-xl font-semibold text-primary-900 mb-2">Welcome Back, {profile.name || 'Friend'}!</h2>
